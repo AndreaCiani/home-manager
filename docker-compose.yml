@@ -1,0 +1,61 @@
+# Orchestrazione dei 3 servizi di home-manager.
+# Avvio:  docker compose up --build
+#
+# Questo file descrive la configurazione "di rilascio" (frontend servito da Nginx).
+# Per lo sviluppo con ricarica automatica vedi docs/02-architecture.md.
+
+services:
+  # ---------------------------------------------------------------
+  # 🐘 Database PostgreSQL
+  # ---------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: hm-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-homemanager}
+      POSTGRES_USER: ${POSTGRES_USER:-homemanager}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-homemanager}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # La porta è esposta solo in locale per comodità di debug.
+    # In produzione NON esporre il database verso l'esterno.
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-homemanager}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------
+  # ☕ Backend Spring Boot (API REST)
+  # ---------------------------------------------------------------
+  backend:
+    build: ./backend
+    container_name: hm-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db:5432/homemanager}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-homemanager}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-homemanager}
+    ports:
+      - "8080:8080"
+
+  # ---------------------------------------------------------------
+  # 🅰️ Frontend Angular (PWA) servito da Nginx
+  # ---------------------------------------------------------------
+  frontend:
+    build: ./frontend
+    container_name: hm-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+
+volumes:
+  pgdata:
