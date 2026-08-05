@@ -76,4 +76,9 @@ home-manager/
 
 ## 🗺️ Stato del progetto
 
-🚧 **Fase attuale:** scheletro + documentazione. Prossimo passo: generare il backend e il frontend e realizzare il Modulo 1.
+🏗️ **Fase attuale:** Modulo 1 — Spesa & Dispensa in costruzione.
+
+- ☕ **Backend**: API REST complete per lista spesa e dispensa (CRUD + prodotti in scadenza).
+- 🅰️ **Frontend**: app Angular 19 + Tailwind (PWA) generata, con le pagine 🛒 Lista spesa e 📦 Dispensa collegate alle API. Vedi [frontend/README.md](frontend/README.md).
+
+Prossimi passi: rifinire il Modulo 1 (test, piccoli miglioramenti UX) e valutare il primo modulo successivo dalla [roadmap](docs/04-modules.md).
