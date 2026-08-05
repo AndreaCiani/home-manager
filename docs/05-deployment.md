@@ -1,66 +1,66 @@
-# 05 — Deploy (messa online da casa)
+# 05 — Deployment (going online from home)
 
-> ⚠️ **Questo è l'ultimo step.** Prima si sviluppa e si prova tutto in locale (`localhost`). Questo documento è il piano da attuare quando l'app è pronta.
+> ⚠️ **This is the last step.** First everything is developed and tested locally (`localhost`). This document is the plan to carry out when the app is ready.
 
-## Scenario scelto: auto-hosting da casa
+## Chosen scenario: self-hosting from home
 
-L'utente ha a disposizione:
-- 🖥️ un **PC fisso** sempre acceso (ci gira `docker compose up`)
-- 🌐 un **IP statico** pubblico
+The user has available:
+- 🖥️ an always-on **desktop PC** (it runs `docker compose up`)
+- 🌐 a public **static IP**
 
-Piano di base (funziona, ma vedi sotto il miglioramento con Cloudflare):
+Basic plan (it works, but see the Cloudflare improvement below):
 
 ```
-Internet ──▶ IP statico ──▶ modem (port forwarding) ──▶ 💻 PC di casa (docker compose)
+Internet ──▶ static IP ──▶ modem (port forwarding) ──▶ 💻 home PC (docker compose)
 ```
 
-## ✅ Le 3 accortezze indispensabili
+## ✅ The 3 indispensable precautions
 
-### 1. 🔒 HTTPS obbligatorio
-Una **PWA si installa e funziona solo in HTTPS** (eccetto in locale). Serve quindi:
-- un **dominio** (~10 €/anno) puntato al proprio IP/servizio
-- un **certificato TLS** (Let's Encrypt, gratuito e auto-rinnovabile)
+### 1. 🔒 HTTPS mandatory
+A **PWA installs and works only over HTTPS** (except locally). So you need:
+- a **domain** (~€10/year) pointed at your own IP/service
+- a **TLS certificate** (Let's Encrypt, free and auto-renewable)
 
-Strumenti che semplificano molto: **Caddy** (HTTPS automatico) oppure direttamente **Cloudflare** (vedi sotto).
+Tools that make this much easier: **Caddy** (automatic HTTPS) or directly **Cloudflare** (see below).
 
-### 2. 🛡️ Sicurezza
-- Esporre **solo** la porta del proxy (443). **Mai** esporre direttamente PostgreSQL o la porta di Spring Boot.
-- Aggiungere un **login** sull'app (modulo Utenti & Famiglia) prima di aprirla a Internet.
-- Tenere aggiornati i container.
+### 2. 🛡️ Security
+- Expose **only** the proxy port (443). **Never** expose PostgreSQL or the Spring Boot port directly.
+- Add a **login** to the app (Users & Family module) before opening it to the Internet.
+- Keep the containers up to date.
 
-### 3. 📡 Verifica ISP
-Controllare che il provider non blocchi le porte **80/443 in entrata** (alcuni lo fanno anche con IP statico). Con Cloudflare Tunnel (sotto) il problema si aggira del tutto.
+### 3. 📡 ISP check
+Check that the provider doesn't block ports **80/443 inbound** (some do, even with a static IP). With Cloudflare Tunnel (below) the problem is bypassed entirely.
 
-## ☁️ Miglioramento consigliato: Cloudflare
+## ☁️ Recommended improvement: Cloudflare
 
-Mettere **Cloudflare** davanti al sito è caldamente consigliato per l'auto-hosting domestico:
+Putting **Cloudflare** in front of the site is warmly recommended for home self-hosting:
 
-- 🕵️ **Nasconde l'IP di casa** — il traffico passa da Cloudflare
-- 🛡️ **Anti-bot / DDoS / WAF** — protezione già nel piano **gratuito** (Bot Fight Mode)
-- 🔒 **SSL al bordo** — HTTPS gestito da Cloudflare
+- 🕵️ **Hides the home IP** — traffic passes through Cloudflare
+- 🛡️ **Anti-bot / DDoS / WAF** — protection already in the **free** plan (Bot Fight Mode)
+- 🔒 **SSL at the edge** — HTTPS handled by Cloudflare
 - ⚡ **Cache + rate limiting**
 
-### 🚀 Ancora meglio: Cloudflare Tunnel
+### 🚀 Even better: Cloudflare Tunnel
 
-Con **Cloudflare Tunnel** (`cloudflared`) il PC di casa si collega **in uscita** a Cloudflare:
+With **Cloudflare Tunnel** (`cloudflared`) the home PC connects **outbound** to Cloudflare:
 
 ```
-Internet ──▶ ☁️ Cloudflare (anti-bot, SSL, nasconde IP) ──tunnel──▶ 💻 PC di casa (docker compose)
+Internet ──▶ ☁️ Cloudflare (anti-bot, SSL, hides IP) ──tunnel──▶ 💻 home PC (docker compose)
 ```
 
-Vantaggi:
-- ❌ **niente port-forwarding** sul modem
-- ❌ **niente IP esposto**
-- ✅ nessuna porta in ingresso aperta sulla rete di casa
+Advantages:
+- ❌ **no port-forwarding** on the modem
+- ❌ **no exposed IP**
+- ✅ no inbound port open on the home network
 
-Richiede solo un **dominio gestito su Cloudflare** (piano gratuito). È oggi la prassi più sicura per ospitare in casa.
+It only requires a **domain managed on Cloudflare** (free plan). Today it is the safest practice for hosting from home.
 
-## 💾 Da non dimenticare
+## 💾 Not to forget
 
-- **Backup automatici del database** — sono i dati della famiglia. Pianificare un dump periodico di PostgreSQL (es. `pg_dump` schedulato) salvato in un posto sicuro.
-- **Gestione dei segreti** — password del DB e simili in `.env` (mai nel repository).
-- **Monitoraggio/uptime** — opzionale, un semplice check che avvisa se l'app va giù.
+- **Automatic database backups** — this is the family's data. Schedule a periodic PostgreSQL dump (e.g. a scheduled `pg_dump`) saved in a safe place.
+- **Secrets management** — the DB password and the like in `.env` (never in the repository).
+- **Monitoring/uptime** — optional, a simple check that alerts you if the app goes down.
 
-## 🔮 Oltre la PWA (facoltativo, futuro)
+## 🔮 Beyond the PWA (optional, future)
 
-Se un domani servisse la **vera app** su Google Play / App Store, si può impacchettare la stessa PWA con **Capacitor**, senza riscrivere il frontend.
+If one day a **real app** on Google Play / App Store were needed, the same PWA can be packaged with **Capacitor**, without rewriting the frontend.

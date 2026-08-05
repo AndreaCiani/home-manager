@@ -5,13 +5,13 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Configurazione web.
+ * Web configuration.
  *
- * In sviluppo il frontend Angular gira su http://localhost:4200 e chiama le API
- * su http://localhost:8080: serve quindi abilitare il CORS per quell'origine.
+ * In development the Angular frontend runs on http://localhost:4200 and calls the
+ * API on http://localhost:8080, so CORS must be enabled for that origin.
  *
- * In produzione, con Nginx che fa da reverse proxy sotto lo stesso dominio,
- * il CORS non è necessario (stessa origine).
+ * In production, with Nginx acting as a reverse proxy under the same domain,
+ * CORS is not needed (same origin).
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {

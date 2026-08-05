@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 
 /**
- * Guscio dell'applicazione: header, area contenuto (router-outlet) e
- * barra di navigazione inferiore (mobile-first) tra Spesa e Dispensa.
+ * Application shell: header, content area (router-outlet) and a
+ * mobile-first bottom navigation bar between Shopping and Pantry.
  */
 @Component({
   selector: 'app-root',
@@ -17,36 +17,36 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
         </h1>
       </header>
 
-      <!-- Contenuto -->
+      <!-- Content -->
       <main class="flex-1 px-4 py-5 pb-24">
         <router-outlet />
       </main>
 
-      <!-- Navigazione inferiore -->
+      <!-- Bottom navigation -->
       <nav
         class="fixed inset-x-0 bottom-0 z-10 border-t border-slate-200 bg-white"
-        aria-label="Navigazione principale"
+        aria-label="Main navigation"
       >
         <div class="mx-auto flex max-w-2xl">
           <a
-            routerLink="/spesa"
+            routerLink="/shopping"
             routerLinkActive="text-emerald-600"
-            #spesa="routerLinkActive"
+            #shopping="routerLinkActive"
             class="flex flex-1 flex-col items-center gap-1 py-3 text-sm text-slate-500 transition-colors"
-            [attr.aria-current]="spesa.isActive ? 'page' : null"
+            [attr.aria-current]="shopping.isActive ? 'page' : null"
           >
             <span class="text-xl" aria-hidden="true">🛒</span>
-            Spesa
+            Shopping
           </a>
           <a
-            routerLink="/dispensa"
+            routerLink="/pantry"
             routerLinkActive="text-emerald-600"
-            #dispensa="routerLinkActive"
+            #pantry="routerLinkActive"
             class="flex flex-1 flex-col items-center gap-1 py-3 text-sm text-slate-500 transition-colors"
-            [attr.aria-current]="dispensa.isActive ? 'page' : null"
+            [attr.aria-current]="pantry.isActive ? 'page' : null"
           >
             <span class="text-xl" aria-hidden="true">📦</span>
-            Dispensa
+            Pantry
           </a>
         </div>
       </nav>

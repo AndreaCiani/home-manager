@@ -3,15 +3,15 @@ spring:
     name: home-manager
 
   datasource:
-    # Valori sovrascrivibili da variabili d'ambiente (vedi .env.example).
-    # In locale senza Docker puoi puntare a localhost.
+    # Values overridable via environment variables (see .env.example).
+    # Locally without Docker you can point to localhost.
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/homemanager}
     username: ${SPRING_DATASOURCE_USERNAME:homemanager}
     password: ${SPRING_DATASOURCE_PASSWORD:homemanager}
 
   jpa:
     hibernate:
-      # "update" va bene in sviluppo. In produzione valutare migrazioni (Flyway).
+      # "update" is fine in development. In production consider migrations (Flyway).
       ddl-auto: update
     properties:
       hibernate:
@@ -21,5 +21,5 @@ spring:
 server:
   port: 8080
 
-# Prefisso comune a tutte le API
-# (i controller usano già /api/... quindi questo è solo indicativo)
+# Common prefix for all APIs
+# (controllers already use /api/... so this is only indicative)

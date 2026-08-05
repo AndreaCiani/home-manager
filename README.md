@@ -1,84 +1,84 @@
 # 🏠 home-manager
 
-Un **gestionale per la casa**: un'unica app, condivisa in famiglia, per tenere sotto controllo tutto ciò che riguarda la gestione domestica.
+A **household management app**: a single app, shared across the family, to keep everything about running the home under control.
 
-Nasce per risolvere un problema concreto e quotidiano (spesa, dispensa, scadenze) ed è pensato per **crescere a moduli** nel tempo.
+It was born to solve a concrete, everyday problem (shopping, pantry, expiry) and is designed to **grow module by module** over time.
 
-> ⚠️ Nome di lavoro: `home-manager`. È facile da rinominare più avanti (cartella + qualche riferimento in configurazione).
-
----
-
-## 🎯 Cosa fa (primo modulo)
-
-**Modulo 1 — Spesa & Dispensa** (l'MVP, quello che usiamo subito con la famiglia):
-
-- 🛒 **Lista della spesa condivisa** — tutti in famiglia aggiungono/spuntano voci in tempo reale
-- 📦 **Dispensa** — cosa c'è in casa, con quantità
-- ⏰ **Scadenze** — avvisi quando un prodotto sta per scadere → meno sprechi
-
-I moduli successivi (bollette, faccende, budget, documenti…) sono nella [roadmap](docs/04-modules.md).
+> ⚠️ Working name: `home-manager`. It is easy to rename later (folder + a few references in configuration).
 
 ---
 
-## 🧱 Stack tecnologico
+## 🎯 What it does (first module)
 
-| Livello | Tecnologia |
+**Module 1 — Shopping & Pantry** (the MVP, the one we use with the family right away):
+
+- 🛒 **Shared shopping list** — everyone in the family adds/ticks items in real time
+- 📦 **Pantry** — what's at home, with quantities
+- ⏰ **Expiry** — alerts when a product is about to expire → less waste
+
+The later modules (bills, chores, budget, documents…) are in the [roadmap](docs/04-modules.md).
+
+---
+
+## 🧱 Tech stack
+
+| Layer | Technology |
 |---|---|
-| Frontend | **Angular 19** (standalone) + **Tailwind CSS** (puro), come **PWA** installabile |
-| Backend | **Java 21** + **Spring Boot** (API REST) |
+| Frontend | **Angular 19** (standalone) + **Tailwind CSS** (pure), as an installable **PWA** |
+| Backend | **Java 21** + **Spring Boot** (REST API) |
 | Database | **PostgreSQL** |
-| Serving | **Nginx** serve la PWA e fa da proxy verso le API |
-| Orchestrazione | **Docker Compose** (tutto in container) |
+| Serving | **Nginx** serves the PWA and proxies the APIs |
+| Orchestration | **Docker Compose** (everything in containers) |
 
-Dettagli e motivazioni in [docs/02-architecture.md](docs/02-architecture.md) e [docs/03-decisions.md](docs/03-decisions.md).
+Details and rationale in [docs/02-architecture.md](docs/02-architecture.md) and [docs/03-decisions.md](docs/03-decisions.md).
 
 ---
 
-## 🚀 Avvio rapido (in locale)
+## 🚀 Quick start (locally)
 
-> Requisiti: **Docker** installato. Non serve installare Java, Node o Postgres a mano.
+> Requirements: **Docker** installed. No need to install Java, Node or Postgres by hand.
 
 ```bash
 docker compose up
 ```
 
-Poi apri il browser su:
+Then open the browser at:
 
 - App (frontend): http://localhost:4200
 - API (backend): http://localhost:8080/api
 
-Per lo sviluppo con ricarica automatica del frontend, vedi [docs/02-architecture.md](docs/02-architecture.md#modalità-sviluppo-vs-rilascio).
+For development with frontend hot reload, see [docs/02-architecture.md](docs/02-architecture.md#development-vs-production-mode).
 
 ---
 
-## 📁 Struttura del progetto
+## 📁 Project structure
 
 ```
 home-manager/
-├── docker-compose.yml      🐳 orchestra i 3 servizi
-├── .env.example            🔧 variabili d'ambiente (copia in .env)
-├── docs/                   📖 documentazione e decisioni di progetto
-├── backend/                ☕ Spring Boot (API REST)
+├── docker-compose.yml      🐳 orchestrates the 3 services
+├── .env.example            🔧 environment variables (copy to .env)
+├── docs/                   📖 project documentation and decisions
+├── backend/                ☕ Spring Boot (REST API)
 └── frontend/               🅰️ Angular + Tailwind (PWA)
 ```
 
 ---
 
-## 📖 Documentazione
+## 📖 Documentation
 
-- [01 — Visione](docs/01-vision.md) — cos'è e perché
-- [02 — Architettura](docs/02-architecture.md) — come è fatto tecnicamente
-- [03 — Decisioni](docs/03-decisions.md) — tutte le scelte fatte e il perché
-- [04 — Moduli & Roadmap](docs/04-modules.md) — cosa c'è ora e cosa verrà
-- [05 — Deploy](docs/05-deployment.md) — come portarlo online da casa (Docker, Cloudflare, sicurezza)
+- [01 — Vision](docs/01-vision.md) — what it is and why
+- [02 — Architecture](docs/02-architecture.md) — how it's built technically
+- [03 — Decisions](docs/03-decisions.md) — every choice made and the reasoning
+- [04 — Modules & Roadmap](docs/04-modules.md) — what exists now and what's coming
+- [05 — Deployment](docs/05-deployment.md) — how to take it online from home (Docker, Cloudflare, security)
 
 ---
 
-## 🗺️ Stato del progetto
+## 🗺️ Project status
 
-🏗️ **Fase attuale:** Modulo 1 — Spesa & Dispensa in costruzione.
+🏗️ **Current phase:** Module 1 — Shopping & Pantry under construction.
 
-- ☕ **Backend**: API REST complete per lista spesa e dispensa (CRUD + prodotti in scadenza).
-- 🅰️ **Frontend**: app Angular 19 + Tailwind (PWA) generata, con le pagine 🛒 Lista spesa e 📦 Dispensa collegate alle API. Vedi [frontend/README.md](frontend/README.md).
+- ☕ **Backend**: complete REST API for the shopping list and pantry (CRUD + expiring products).
+- 🅰️ **Frontend**: Angular 19 + Tailwind (PWA) app generated, with the 🛒 Shopping list and 📦 Pantry pages wired to the APIs. See [frontend/README.md](frontend/README.md).
 
-Prossimi passi: rifinire il Modulo 1 (test, piccoli miglioramenti UX) e valutare il primo modulo successivo dalla [roadmap](docs/04-modules.md).
+Next steps: polish Module 1 (tests, small UX improvements) and evaluate the first follow-up module from the [roadmap](docs/04-modules.md).

@@ -1,55 +1,55 @@
 # 🅰️ Frontend — Angular + Tailwind (PWA)
 
-App **Angular 19** (standalone) con **Tailwind CSS** puro, configurata come **PWA** installabile. Realizza il **Modulo 1 — Spesa & Dispensa**.
+**Angular 19** app (standalone) with pure **Tailwind CSS**, set up as an installable **PWA**. It implements **Module 1 — Shopping & Pantry**.
 
-## 🚀 Sviluppo (ricarica automatica)
+## 🚀 Development (hot reload)
 
-Dalla cartella `frontend/`:
+From the `frontend/` folder:
 
 ```bash
-npm install        # solo la prima volta
-npm start          # ng serve su http://localhost:4200
+npm install        # first time only
+npm start          # ng serve on http://localhost:4200
 ```
 
-Il dev-server fa da **proxy**: le chiamate a `/api` vengono inoltrate al backend su `http://localhost:8080` (vedi [proxy.conf.json](proxy.conf.json)). Avvia quindi anche il backend (o l'intero stack con `docker compose up`).
+The dev server acts as a **proxy**: calls to `/api` are forwarded to the backend on `http://localhost:8080` (see [proxy.conf.json](proxy.conf.json)). So also start the backend (or the whole stack with `docker compose up`).
 
-## 📦 Build di produzione
+## 📦 Production build
 
 ```bash
 npm run build      # output in dist/frontend/browser
 ```
 
-È lo stesso comando usato dal [Dockerfile](Dockerfile): Nginx serve i file statici da `dist/frontend/browser` e inoltra `/api` al backend (vedi [nginx.conf](nginx.conf)).
+This is the same command used by the [Dockerfile](Dockerfile): Nginx serves the static files from `dist/frontend/browser` and forwards `/api` to the backend (see [nginx.conf](nginx.conf)).
 
-## 🗂️ Struttura
+## 🗂️ Structure
 
 ```
 frontend/
-├── Dockerfile              🐳 build Angular + servizio con Nginx
-├── nginx.conf              🌐 static + proxy /api + fallback SPA
-├── proxy.conf.json         🔗 proxy /api → :8080 (solo sviluppo)
-├── tailwind.config.js      🎨 configurazione Tailwind
-├── ngsw-config.json        📱 configurazione service worker (PWA)
+├── Dockerfile              🐳 Angular build + serving with Nginx
+├── nginx.conf              🌐 static + /api proxy + SPA fallback
+├── proxy.conf.json         🔗 /api → :8080 proxy (development only)
+├── tailwind.config.js      🎨 Tailwind configuration
+├── ngsw-config.json        📱 service worker configuration (PWA)
 └── src/
     ├── app/
-    │   ├── models/         🧩 tipi allineati alle entità backend (Prodotto, VoceSpesa)
-    │   ├── services/       🔗 chiamate HTTP a /api (ProdottoService, VoceSpesaService)
-    │   ├── components/     🧱 pezzi riusabili (card prodotto, riga lista)
+    │   ├── models/         🧩 types mirroring the backend entities (Product, ShoppingItem)
+    │   ├── services/       🔗 HTTP calls to /api (ProductService, ShoppingItemService)
+    │   ├── components/     🧱 reusable pieces (product card, list row)
     │   ├── pages/
-    │   │   ├── lista-spesa/  🛒 lista condivisa
-    │   │   └── dispensa/     📦 inventario + scadenze
-    │   ├── app.component.ts  guscio: header + navigazione
-    │   └── app.routes.ts     rotte (/spesa, /dispensa)
-    ├── styles.css           direttive @tailwind + stili globali
+    │   │   ├── shopping-list/  🛒 shared list
+    │   │   └── pantry/         📦 inventory + expiry
+    │   ├── app.component.ts    shell: header + navigation
+    │   └── app.routes.ts       routes (/shopping, /pantry)
+    ├── styles.css           @tailwind directives + global styles
     ├── index.html
     └── public/
         ├── manifest.webmanifest  📱 PWA
-        └── icons/                icone PWA
+        └── icons/                PWA icons
 ```
 
-## 📝 Note
+## 📝 Notes
 
-- **Tailwind puro**: nessuna libreria di componenti. La UI è costruita con le utility di Tailwind e componenti standalone.
-- **Angular moderno**: componenti *standalone*, *signals*, `inject()` e il nuovo control flow (`@if` / `@for`).
-- Le pagine gestiscono con grazia il backend non raggiungibile mostrando un messaggio, senza bloccare l'app.
-- Vedi [../docs/02-architecture.md](../docs/02-architecture.md) per il quadro completo.
+- **Pure Tailwind**: no component library. The UI is built with Tailwind utilities and standalone components.
+- **Modern Angular**: standalone components, *signals*, `inject()` and the new control flow (`@if` / `@for`).
+- The pages handle an unreachable backend gracefully by showing a message, without blocking the app.
+- See [../docs/02-architecture.md](../docs/02-architecture.md) for the full picture.

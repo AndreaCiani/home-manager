@@ -1,12 +1,12 @@
-# Orchestrazione dei 3 servizi di home-manager.
-# Avvio:  docker compose up --build
+# Orchestration of the 3 home-manager services.
+# Start with:  docker compose up --build
 #
-# Questo file descrive la configurazione "di rilascio" (frontend servito da Nginx).
-# Per lo sviluppo con ricarica automatica vedi docs/02-architecture.md.
+# This file describes the "release" configuration (frontend served by Nginx).
+# For development with hot reload see docs/02-architecture.md.
 
 services:
   # ---------------------------------------------------------------
-  # 🐘 Database PostgreSQL
+  # 🐘 PostgreSQL database
   # ---------------------------------------------------------------
   db:
     image: postgres:16-alpine
@@ -18,8 +18,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-homemanager}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    # La porta è esposta solo in locale per comodità di debug.
-    # In produzione NON esporre il database verso l'esterno.
+    # The port is exposed locally only for debugging convenience.
+    # In production do NOT expose the database to the outside.
     ports:
       - "5432:5432"
     healthcheck:
@@ -29,7 +29,7 @@ services:
       retries: 5
 
   # ---------------------------------------------------------------
-  # ☕ Backend Spring Boot (API REST)
+  # ☕ Spring Boot backend (REST API)
   # ---------------------------------------------------------------
   backend:
     build: ./backend
@@ -46,7 +46,7 @@ services:
       - "8080:8080"
 
   # ---------------------------------------------------------------
-  # 🅰️ Frontend Angular (PWA) servito da Nginx
+  # 🅰️ Angular frontend (PWA) served by Nginx
   # ---------------------------------------------------------------
   frontend:
     build: ./frontend

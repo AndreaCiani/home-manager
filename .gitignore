@@ -1,4 +1,4 @@
-# Ambiente / segreti
+# Environment / secrets
 .env
 *.local
 
@@ -27,5 +27,8 @@ npm-debug.log*
 Thumbs.db
 .DS_Store
 
-# Docker / DB volumes (dati locali)
+# Docker / DB volumes (local data)
 pgdata/
+
+# Claude Code (local tooling)
+.claude/

@@ -1,84 +1,84 @@
-# 02 — Architettura
+# 02 — Architecture
 
-## Panoramica
+## Overview
 
-Tre servizi, tutti containerizzati e orchestrati da **Docker Compose**. Un solo comando (`docker compose up`) avvia l'intero sistema — nessun ambiente da configurare a mano.
+Three services, all containerized and orchestrated by **Docker Compose**. A single command (`docker compose up`) starts the whole system — nothing to set up by hand.
 
 ```
                  ┌───────────────────── docker compose ─────────────────────┐
                  │                                                           │
-  browser  ─────▶│  🌐 nginx ──┬──▶ file Angular (PWA, HTML/JS/CSS)          │
-  (telefono/pc)  │             │                                            │
+  browser  ─────▶│  🌐 nginx ──┬──▶ Angular files (PWA, HTML/JS/CSS)         │
+  (phone/pc)     │             │                                            │
                  │             └──▶ /api/* ──▶ ☕ Spring Boot ──▶ 🐘 Postgres │
                  │                :80            :8080              :5432     │
                  └───────────────────────────────────────────────────────────┘
 ```
 
-## I tre servizi
+## The three services
 
 ### 🅰️ Frontend — Angular 19 + Tailwind CSS (PWA)
 
-- **Angular 19** con componenti *standalone* (approccio moderno, senza NgModule).
-- **Tailwind CSS puro** per lo stile: nessun Angular Material, nessuna libreria di componenti. Massima libertà sull'aspetto. I componenti (card, form, liste) li costruiamo noi.
-- **PWA**: l'app è installabile ("Aggiungi a schermata Home") e funziona offline grazie al service worker. Un solo codice serve sia telefono che desktop.
-- In rilascio è servito da **Nginx** (vedi sotto).
+- **Angular 19** with *standalone* components (the modern approach, without NgModules).
+- **Pure Tailwind CSS** for styling: no Angular Material, no component library. Maximum freedom over the look. We build the components (cards, forms, lists) ourselves.
+- **PWA**: the app is installable ("Add to Home Screen") and works offline thanks to the service worker. A single codebase serves both phone and desktop.
+- In production it is served by **Nginx** (see below).
 
 ### ☕ Backend — Java 21 + Spring Boot
 
-- Espone una **API REST** sotto `/api` (es. `/api/prodotti`, `/api/spesa`).
-- **Spring Data JPA** per l'accesso al database (repository generati automaticamente).
-- **Bean Validation** per validare i dati in ingresso.
-- Configurazione via variabili d'ambiente (vedi `.env.example`).
+- Exposes a **REST API** under `/api` (e.g. `/api/products`, `/api/shopping-items`).
+- **Spring Data JPA** for database access (repositories generated automatically).
+- **Bean Validation** to validate incoming data.
+- Configured via environment variables (see `.env.example`).
 
 ### 🐘 Database — PostgreSQL 16
 
-- Database relazionale centrale, condiviso tra tutti gli utenti/famigliari.
-- I dati persistono in un volume Docker (`pgdata`).
-- ⚠️ In produzione **non** va esposto verso l'esterno: solo il backend lo raggiunge, sulla rete interna di Docker.
+- The central relational database, shared across all users/family members.
+- Data persists in a Docker volume (`pgdata`).
+- ⚠️ In production it must **not** be exposed to the outside: only the backend reaches it, over Docker's internal network.
 
-## Come vengono serviti i file (serving)
+## How files are served
 
-Scelta: **Nginx serve il frontend + Spring serve solo le API.**
+Choice: **Nginx serves the frontend + Spring serves only the APIs.**
 
-- Nginx è nato per servire file statici (velocissimo, ottima gestione di cache e service worker della PWA).
-- Nginx fa anche da **reverse proxy**: le richieste `/api/*` le inoltra a Spring Boot; tutto il resto è l'app Angular (con *fallback* SPA sulle rotte lato client).
+- Nginx was built to serve static files (very fast, great handling of cache and the PWA service worker).
+- Nginx also acts as a **reverse proxy**: it forwards `/api/*` requests to Spring Boot; everything else is the Angular app (with an SPA *fallback* for client-side routes).
 
-Alternativa considerata e scartata: far servire tutto a Spring Boot (un unico artefatto). Più semplice da distribuire, ma accoppia frontend e backend e Java non è l'ideale come server di file statici. Dettagli in [03-decisions.md](03-decisions.md).
+Alternative considered and discarded: letting Spring Boot serve everything (a single artifact). Simpler to deploy, but it couples frontend and backend, and Java is not ideal as a static file server. Details in [03-decisions.md](03-decisions.md).
 
-## Modalità sviluppo vs rilascio
+## Development vs production mode
 
-| | Sviluppo | Rilascio |
+| | Development | Production |
 |---|---|---|
-| Frontend | `ng serve` (dev-server Angular, **ricarica automatica** su :4200) | build statico servito da **Nginx** |
-| Backend | Spring Boot in esecuzione (hot reload con devtools) | jar dentro immagine Docker |
-| Come si chiamano le API | il dev-server fa da proxy verso :8080 (o CORS abilitato) | Nginx inoltra `/api` al backend |
+| Frontend | `ng serve` (Angular dev server, **hot reload** on :4200) | static build served by **Nginx** |
+| Backend | Spring Boot running (hot reload with devtools) | jar inside a Docker image |
+| How APIs are called | the dev server proxies to :8080 (or CORS enabled) | Nginx forwards `/api` to the backend |
 
-In sviluppo si può lavorare comodamente con la ricarica automatica; Docker Compose serve soprattutto per la versione "buona" e per avere il database pronto senza installarlo.
+In development you can work comfortably with hot reload; Docker Compose is mainly for the "release" version and for having the database ready without installing it.
 
-## Flusso di una richiesta (esempio)
+## Flow of a request (example)
 
-1. L'utente apre la lista della spesa → Angular chiama `GET /api/spesa`.
-2. Nginx riceve la richiesta e, vedendo `/api`, la inoltra a Spring Boot.
-3. Spring Boot interroga Postgres tramite il repository JPA.
-4. Torna un JSON con le voci → Angular le mostra nella lista.
+1. The user opens the shopping list → Angular calls `GET /api/shopping-items`.
+2. Nginx receives the request and, seeing `/api`, forwards it to Spring Boot.
+3. Spring Boot queries Postgres through the JPA repository.
+4. A JSON with the items comes back → Angular shows them in the list.
 
-## Struttura del codice
+## Code structure
 
 ```
 backend/src/main/java/com/homemanager/
-├── HomeManagerApplication.java      punto d'avvio
-├── config/                          configurazioni (CORS, ecc.)
-└── pantry/                          MODULO 1: Spesa & Dispensa
-    ├── model/                       entità (Prodotto, VoceSpesa)
-    ├── repository/                  accesso dati (JPA)
-    ├── controller/                  endpoint REST
-    └── dto/                         oggetti di trasferimento (input/output)
+├── HomeManagerApplication.java      entry point
+├── config/                          configuration (CORS, etc.)
+└── pantry/                          MODULE 1: Shopping & Pantry
+    ├── model/                       entities (Product, ShoppingItem)
+    ├── repository/                  data access (JPA)
+    ├── controller/                  REST endpoints
+    └── dto/                         data transfer objects (input/output)
 
-frontend/src/                        (generato con "ng new", vedi frontend/README.md)
+frontend/src/                        (generated with "ng new", see frontend/README.md)
 └── app/
-    ├── pages/                       schermate: dispensa, lista spesa
-    ├── components/                  pezzi riusabili (card prodotto, riga lista)
-    └── services/                    chiamate HTTP al backend
+    ├── pages/                       screens: pantry, shopping list
+    ├── components/                  reusable pieces (product card, list row)
+    └── services/                    HTTP calls to the backend
 ```
 
-Ogni modulo futuro seguirà lo stesso schema (una cartella per modulo, sia lato backend che frontend), per mantenere il progetto ordinato mentre cresce.
+Every future module will follow the same layout (one folder per module, on both backend and frontend), to keep the project tidy as it grows.

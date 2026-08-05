@@ -1,82 +1,82 @@
-# 04 — Moduli & Roadmap
+# 04 — Modules & Roadmap
 
-Il progetto cresce **un modulo alla volta**. Ogni modulo è una funzionalità coerente e rilasciabile, con la sua cartella sia nel backend che nel frontend.
-
----
-
-## ✅ Modulo 1 — Spesa & Dispensa (in costruzione)
-
-L'MVP: la prima versione usabile, da mettere subito in mano alla famiglia.
-
-### Funzioni
-
-1. **🛒 Lista della spesa condivisa**
-   - Aggiungere una voce (nome, quantità)
-   - Spuntare come "presa" / rimuovere
-   - Vista condivisa: tutti vedono la stessa lista
-
-2. **📦 Dispensa (inventario)**
-   - Elenco dei prodotti in casa con quantità e categoria
-   - Aggiungere / modificare / rimuovere prodotti
-
-3. **⏰ Scadenze**
-   - Data di scadenza sui prodotti
-   - Evidenziazione "scade tra X giorni" per ridurre gli sprechi
-
-### Modello dati (prima versione)
-
-**Prodotto** (dispensa)
-| Campo | Tipo | Note |
-|---|---|---|
-| id | Long | chiave |
-| nome | String | es. "Latte" |
-| quantita | BigDecimal | es. 2 |
-| unita | String | es. "L", "pz", "kg" |
-| categoria | enum | es. FRESCO, DISPENSA, SURGELATO, ALTRO |
-| dataScadenza | LocalDate | opzionale; base per gli avvisi |
-| createdAt | Instant | automatico |
-
-**VoceSpesa** (lista della spesa)
-| Campo | Tipo | Note |
-|---|---|---|
-| id | Long | chiave |
-| nome | String | es. "Pane" |
-| quantita | BigDecimal | opzionale |
-| presa | boolean | spuntata o no |
-| aggiuntoDa | String | chi l'ha aggiunta (provvisorio, in attesa del modulo utenti) |
-| createdAt | Instant | automatico |
-
-### Endpoint REST previsti
-
-```
-GET    /api/prodotti           elenco dispensa
-POST   /api/prodotti           aggiungi prodotto
-PUT    /api/prodotti/{id}      modifica prodotto
-DELETE /api/prodotti/{id}      rimuovi prodotto
-
-GET    /api/spesa              elenco lista spesa
-POST   /api/spesa              aggiungi voce
-PUT    /api/spesa/{id}         modifica voce (es. spunta "presa")
-DELETE /api/spesa/{id}         rimuovi voce
-```
-
-### Idee "dopo" (stesso modulo)
-- Suggerimento: quando un prodotto della dispensa finisce → aggiunta rapida alla lista spesa
-- Scanner del codice a barre per aggiungere velocemente
-- Ricette suggerite con ciò che sta per scadere
+The project grows **one module at a time**. Each module is a coherent, releasable feature, with its own folder on both the backend and the frontend.
 
 ---
 
-## 🔜 Moduli futuri (roadmap)
+## ✅ Module 1 — Shopping & Pantry (under construction)
 
-Idee, non impegni. L'ordine si deciderà in base all'utilità reale.
+The MVP: the first usable version, to put in the family's hands right away.
 
-| Modulo | Cosa fa |
+### Features
+
+1. **🛒 Shared shopping list**
+   - Add an item (name, quantity)
+   - Mark as "purchased" / remove
+   - Shared view: everyone sees the same list
+
+2. **📦 Pantry (inventory)**
+   - List of products at home with quantity and category
+   - Add / edit / remove products
+
+3. **⏰ Expiry**
+   - Expiry date on products
+   - "Expires in X days" highlighting to reduce waste
+
+### Data model (first version)
+
+**Product** (pantry)
+| Field | Type | Notes |
+|---|---|---|
+| id | Long | key |
+| name | String | e.g. "Milk" |
+| quantity | BigDecimal | e.g. 2 |
+| unit | String | e.g. "L", "pcs", "kg" |
+| category | enum | e.g. FRESH, PANTRY, FROZEN, OTHER |
+| expiryDate | LocalDate | optional; the basis for alerts |
+| createdAt | Instant | automatic |
+
+**ShoppingItem** (shopping list)
+| Field | Type | Notes |
+|---|---|---|
+| id | Long | key |
+| name | String | e.g. "Bread" |
+| quantity | BigDecimal | optional |
+| purchased | boolean | ticked or not |
+| addedBy | String | who added it (temporary, pending the users module) |
+| createdAt | Instant | automatic |
+
+### Planned REST endpoints
+
+```
+GET    /api/products              pantry list
+POST   /api/products              add product
+PUT    /api/products/{id}         edit product
+DELETE /api/products/{id}         remove product
+
+GET    /api/shopping-items        shopping list
+POST   /api/shopping-items        add item
+PUT    /api/shopping-items/{id}   edit item (e.g. mark as "purchased")
+DELETE /api/shopping-items/{id}   remove item
+```
+
+### "Later" ideas (same module)
+- Suggestion: when a pantry product runs out → quick add to the shopping list
+- Barcode scanner to add items quickly
+- Recipe suggestions using what is about to expire
+
+---
+
+## 🔜 Future modules (roadmap)
+
+Ideas, not commitments. The order will be decided based on real usefulness.
+
+| Module | What it does |
 |---|---|
-| 📅 **Scadenze & Bollette** | Promemoria per bollo auto, assicurazioni, bollette, revisioni… |
-| 🧹 **Faccende domestiche** | Chi fa cosa, turni, ricorrenze |
-| 💰 **Budget di casa** | Spese familiari, andamento, categorie |
-| 📄 **Documenti & Manutenzioni** | Archivio documenti di casa, scadenze manutenzioni |
-| 🔑 **Utenti & Famiglia** | Login, profili familiari, permessi (abilita l'uso "vero" condiviso e la messa online sicura) |
+| 📅 **Deadlines & Bills** | Reminders for car tax, insurance, bills, inspections… |
+| 🧹 **Household chores** | Who does what, rotations, recurrences |
+| 💰 **Household budget** | Family expenses, trends, categories |
+| 📄 **Documents & Maintenance** | Archive of household documents, maintenance deadlines |
+| 🔑 **Users & Family** | Login, family profiles, permissions (enables real shared use and safe going-online) |
 
-> Nota: il modulo **Utenti & Famiglia** è trasversale e diventa necessario prima della messa online pubblica (per proteggere l'accesso). Vedi [05-deployment.md](05-deployment.md).
+> Note: the **Users & Family** module is cross-cutting and becomes necessary before public going-online (to protect access). See [05-deployment.md](05-deployment.md).

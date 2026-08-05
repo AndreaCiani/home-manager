@@ -1,42 +1,42 @@
-# 01 — Visione
+# 01 — Vision
 
-## In una frase
+## In one sentence
 
-**home-manager è un gestionale per la casa**: un'unica applicazione, condivisa in famiglia, che raccoglie in un solo posto tutto ciò che serve a gestire la vita domestica — partendo dalla spesa e dalla dispensa.
+**home-manager is a household management app**: a single application, shared within the family, that gathers in one place everything you need to manage domestic life — starting from shopping and the pantry.
 
-## Da dove nasce
+## Where it comes from
 
-L'idea è nata da un percorso di ragionamento (registrato in [03-decisions.md](03-decisions.md)). I punti fermi emersi:
+The idea was born out of a reasoning process (recorded in [03-decisions.md](03-decisions.md)). The firm points that emerged:
 
-- 🎯 **Risolvere un problema proprio.** Non un'app "per il mercato", ma qualcosa che serve *davvero* a chi la costruisce e alla sua famiglia. Questo garantisce un utente reale dal giorno 1 e feedback immediato.
-- 👨‍👩‍👧 **Uso familiare e condiviso.** Più persone, più dispositivi, dati condivisi in tempo reale. Da qui la scelta di un vero backend + database centrale (non un'app locale mono-utente).
-- 📱 **Comodità da telefono.** La si usa in cucina, davanti al frigo, al supermercato. Deve stare bene sul telefono → **PWA installabile**.
-- 🧩 **Deve poter crescere.** Non un giocattolo usa-e-getta, ma un progetto "corposo" che si espande **un modulo alla volta** senza dover essere riscritto.
+- 🎯 **Solve a problem of your own.** Not an app "for the market", but something that is *genuinely* useful to whoever builds it and to their family. This guarantees a real user from day 1 and immediate feedback.
+- 👨‍👩‍👧 **Family and shared use.** Multiple people, multiple devices, data shared in real time. Hence the choice of a real backend + central database (not a local single-user app).
+- 📱 **Convenience from the phone.** It's used in the kitchen, in front of the fridge, at the supermarket. It has to work well on the phone → **installable PWA**.
+- 🧩 **It must be able to grow.** Not a throwaway toy, but a "substantial" project that expands **one module at a time** without having to be rewritten.
 
-## I due bisogni originari
+## The two original needs
 
-L'utente ha identificato due frustrazioni ricorrenti, che nel dominio "casa" si traducono così:
+The user identified two recurring frustrations, which in the "home" domain translate as follows:
 
-1. **"Perdo / non ritrovo informazioni"** → dove sono le scadenze? cosa c'è in dispensa? cosa manca? → un posto unico e ordinato.
-2. **"Non ho visibilità sui miei dati"** → quanto spendo? cosa sta per scadere? → viste chiare e aggregate.
+1. **"I lose / can't find information"** → where are the deadlines? what's in the pantry? what's missing? → a single, tidy place.
+2. **"I have no visibility over my data"** → how much do I spend? what's about to expire? → clear, aggregated views.
 
-## Principio guida: crescita a moduli
+## Guiding principle: growth by modules
 
-Il progetto **non è** "un'app della spesa". È un contenitore che ospita moduli. Il primo è Spesa & Dispensa; gli altri arrivano nel tempo.
+The project **is not** "a shopping app". It's a container that hosts modules. The first is Shopping & Pantry; the others arrive over time.
 
 ```
 🏠 home-manager
-├── 🛒 Spesa & Dispensa       ← MODULO 1 (in costruzione)
-├── 📅 Scadenze & Bollette    ← futuro
-├── 🧹 Faccende domestiche     ← futuro
-├── 💰 Budget di casa          ← futuro
-└── 📄 Documenti & Manutenzioni← futuro
+├── 🛒 Shopping & Pantry       ← MODULE 1 (under construction)
+├── 📅 Deadlines & Bills    ← future
+├── 🧹 Household chores     ← future
+├── 💰 Household budget          ← future
+└── 📄 Documents & Maintenance← future
 ```
 
-Vedi la roadmap dettagliata in [04-modules.md](04-modules.md).
+See the detailed roadmap in [04-modules.md](04-modules.md).
 
-## Non-obiettivi (per ora)
+## Non-goals (for now)
 
-- ❌ Non è un prodotto SaaS multi-tenant per il mercato: è per la propria casa (poi si vedrà).
-- ❌ Niente app store all'inizio: si parte come PWA. Lo store resta una possibilità futura (Capacitor).
-- ❌ Niente funzioni avanzate al primo colpo: prima un Modulo 1 solido e usato davvero.
+- ❌ It is not a multi-tenant SaaS product for the market: it's for your own home (we'll see later).
+- ❌ No app store at the start: we begin as a PWA. The store remains a future possibility (Capacitor).
+- ❌ No advanced features right off the bat: first a solid Module 1 that is actually used.

@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Punto d'avvio dell'applicazione backend di home-manager.
+ * Entry point of the home-manager backend application.
  */
 @SpringBootApplication
 public class HomeManagerApplication {

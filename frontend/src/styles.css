@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Stili globali di home-manager. Tutto il resto è costruito con le utility di Tailwind. */
+/* Global styles for home-manager. Everything else is built with Tailwind utilities. */
 html,
 body {
   @apply h-full bg-slate-50 text-slate-800 antialiased;

@@ -1,14 +1,14 @@
-# --- Stage 1: build del jar con Maven ---
+# --- Stage 1: build the jar with Maven ---
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
-# Prima le dipendenze (sfrutta la cache di Docker)
+# Dependencies first (leverages Docker's cache)
 COPY pom.xml .
 RUN mvn -q dependency:go-offline
-# Poi il codice
+# Then the source code
 COPY src ./src
 RUN mvn -q clean package -DskipTests
 
-# --- Stage 2: immagine di runtime leggera ---
+# --- Stage 2: lightweight runtime image ---
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar

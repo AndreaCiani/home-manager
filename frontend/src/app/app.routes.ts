@@ -1,18 +1,17 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'spesa' },
+  { path: '', pathMatch: 'full', redirectTo: 'shopping' },
   {
-    path: 'spesa',
-    title: 'Lista della spesa · home-manager',
+    path: 'shopping',
+    title: 'Shopping list · home-manager',
     loadComponent: () =>
-      import('./pages/lista-spesa/lista-spesa.component').then((m) => m.ListaSpesaComponent),
+      import('./pages/shopping-list/shopping-list.component').then((m) => m.ShoppingListComponent),
   },
   {
-    path: 'dispensa',
-    title: 'Dispensa · home-manager',
-    loadComponent: () =>
-      import('./pages/dispensa/dispensa.component').then((m) => m.DispensaComponent),
+    path: 'pantry',
+    title: 'Pantry · home-manager',
+    loadComponent: () => import('./pages/pantry/pantry.component').then((m) => m.PantryComponent),
   },
-  { path: '**', redirectTo: 'spesa' },
+  { path: '**', redirectTo: 'shopping' },
 ];

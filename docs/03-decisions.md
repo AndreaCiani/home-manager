@@ -1,103 +1,103 @@
-# 03 — Registro delle decisioni
+# 03 — Decision log
 
-Questo documento registra **tutte le scelte** fatte durante la fase di ideazione, con le alternative considerate e il perché della decisione. Serve a ricordare *perché* le cose sono come sono (ed eventualmente a rimetterle in discussione con cognizione).
-
----
-
-## D1 — Che tipo di progetto
-
-**Decisione:** un gestionale per la casa, a uso familiare, che parte dal modulo Spesa & Dispensa.
-
-**Percorso:** l'obiettivo di partenza era "risolvere un mio problema". Sono state esplorate e scartate idee più orientate allo sviluppatore (un "cockpit personale" che aggrega dati e note): non accendevano interesse perché **non erano un problema realmente vissuto**. L'idea del gestionale di casa è invece emersa in modo spontaneo → segnale di un bisogno autentico.
+This document records **all the choices** made during the ideation phase, along with the alternatives considered and the reasoning behind each decision. It serves to remember *why* things are the way they are (and, if needed, to reconsider them knowingly).
 
 ---
 
-## D2 — Local-first mono-utente vs app condivisa
+## D1 — What kind of project
 
-**Decisione:** app **condivisa** con backend + database centrale.
+**Decision:** a household management app, for family use, that starts from the Shopping & Pantry module.
 
-**Perché:** l'uso è familiare (più persone, più dispositivi, dati in tempo reale). Un'app locale mono-utente (inizialmente ipotizzata quando l'utente era "solo io") non regge questo scenario. Questa scelta **giustifica** l'adozione di PostgreSQL e di un backend vero.
+**Path:** the starting goal was "solve a problem of my own". Ideas more oriented towards the developer (a "personal cockpit" aggregating data and notes) were explored and discarded: they didn't spark interest because **they weren't a genuinely lived problem**. The idea of the household app, on the other hand, emerged spontaneously → a sign of an authentic need.
+
+---
+
+## D2 — Local-first single-user vs shared app
+
+**Decision:** a **shared** app with backend + central database.
+
+**Why:** the use is family-based (multiple people, multiple devices, data in real time). A local single-user app (initially hypothesised when the user was "just me") doesn't hold up in this scenario. This choice **justifies** the adoption of PostgreSQL and a real backend.
 
 ---
 
 ## D3 — Database: PostgreSQL
 
-**Decisione:** **PostgreSQL**.
+**Decision:** **PostgreSQL**.
 
-**Alternative:** SQLite (valida solo nello scenario mono-utente locale, poi decaduto).
+**Alternatives:** SQLite (valid only in the local single-user scenario, which later lapsed).
 
-**Perché:** affidabile, standard di settore, gestisce bene più utenti che scrivono contemporaneamente. Scelta corretta per un'app condivisa, non solo "sicura".
+**Why:** reliable, an industry standard, handles multiple users writing simultaneously well. The right choice for a shared app, not just a "safe" one.
 
 ---
 
 ## D4 — Backend: Java 21 + Spring Boot
 
-**Decisione:** **Java 21 + Spring Boot** (con Maven).
+**Decision:** **Java 21 + Spring Boot** (with Maven).
 
-**Perché:** l'utente ci lavora bene; stack robusto, professionale e molto richiesto (valore anche per il CV). 
+**Why:** the user works well with it; a robust, professional and much sought-after stack (also valuable for the CV).
 
-**Consapevolezza del contro:** è lo stack più verboso (parecchio boilerplate). Accettato in cambio di solidità e familiarità.
-
----
-
-## D5 — Frontend: Angular (senza Material)
-
-**Decisione:** **Angular 19** (standalone), **senza Angular Material**.
-
-**Alternative discusse:** React + Vite, Svelte, Vue. Erano state proposte per alleggerire rispetto ad Angular; l'utente ha però scelto di **restare su Angular**, rinunciando però al look "di default" di Material.
-
-**Perché:** familiarità e coerenza; l'importante era evitare l'aspetto standardizzato di Material.
+**Awareness of the downside:** it's the most verbose stack (quite a lot of boilerplate). Accepted in exchange for solidity and familiarity.
 
 ---
 
-## D6 — Stile UI: Tailwind CSS puro
+## D5 — Frontend: Angular (without Material)
 
-**Decisione:** **Tailwind CSS puro** (nessuna libreria di componenti).
+**Decision:** **Angular 19** (standalone), **without Angular Material**.
 
-**Alternative discusse:** Tailwind + DaisyUI (componenti pronti), Tailwind + spartan/ui (stile shadcn).
+**Alternatives discussed:** React + Vite, Svelte, Vue. They had been proposed to lighten things up compared to Angular; the user, however, chose to **stay on Angular**, while giving up Material's "default" look.
 
-**Perché:** massima libertà e controllo sull'aspetto; i componenti si costruiscono a mano. Più lavoro iniziale, ma nessun vincolo estetico.
-
----
-
-## D7 — Come servire l'app: Nginx + Spring
-
-**Decisione:** **Nginx serve la PWA + reverse proxy verso le API Spring.**
-
-**Alternativa scartata:** Spring Boot serve tutto (frontend statico + API in un unico artefatto). Più semplice da distribuire, ma accoppia frontend e backend e Java non è ottimale come server di file statici.
-
-**Perché:** Nginx è efficiente sui file statici (ideale per una PWA), i tre servizi restano indipendenti e aggiornabili separatamente. L'uso quotidiano resta comunque `docker compose up`.
+**Why:** familiarity and consistency; the important thing was to avoid Material's standardised appearance.
 
 ---
 
-## D8 — Web app vs app nativa: PWA
+## D6 — UI style: pure Tailwind CSS
 
-**Decisione:** **PWA** (Progressive Web App).
+**Decision:** **pure Tailwind CSS** (no component library).
 
-**Perché:** è "la web app che ti installi" — un solo codice per telefono e desktop, funziona offline, si installa senza passare dagli store. Se un domani servirà la vera app da store, si impacchetta la stessa PWA con **Capacitor** senza rifare nulla.
+**Alternatives discussed:** Tailwind + DaisyUI (ready-made components), Tailwind + spartan/ui (shadcn style).
 
----
-
-## D9 — Tutto in Docker
-
-**Decisione:** frontend, backend e database **tutti in container**, orchestrati da Docker Compose.
-
-**Perché:** elimina il problema del "setup degli ambienti" (timore esplicito dell'utente). Riproducibile, isolato, un solo comando. `psql` non è installato sulla macchina, ma Docker sì → Postgres gira in container senza installazioni locali.
+**Why:** maximum freedom and control over the appearance; components are built by hand. More initial work, but no aesthetic constraints.
 
 ---
 
-## D10 — Nome del progetto
+## D7 — How to serve the app: Nginx + Spring
 
-**Decisione:** nome di lavoro **`home-manager`**.
+**Decision:** **Nginx serves the PWA + reverse proxy towards the Spring APIs.**
 
-**Perché:** chiaro e descrittivo. Sono stati esplorati molti nomi (ShelfLife, PantryPal, Homebase, Domus, Vesta, Hestia, Butler, Steward…) senza convincere; si è scelto di **partire subito** con un nome di lavoro, essendo la rinomina un'operazione banale. Il nome può cambiare in seguito.
+**Discarded alternative:** Spring Boot serves everything (static frontend + API in a single artifact). Simpler to distribute, but it couples frontend and backend, and Java is not optimal as a static file server.
+
+**Why:** Nginx is efficient with static files (ideal for a PWA), the three services remain independent and can be updated separately. Day-to-day use remains `docker compose up` anyway.
 
 ---
 
-## D11 — Deploy: auto-hosting da casa + Cloudflare
+## D8 — Web app vs native app: PWA
 
-**Decisione (piano, da attuare alla fine):** hosting su **PC fisso di casa** con **IP statico**, protetto da **Cloudflare** (idealmente **Cloudflare Tunnel**).
+**Decision:** **PWA** (Progressive Web App).
 
-**Perché:** l'utente ha già IP statico e un PC sempre acceso. Cloudflare aggiunge anti-bot/DDoS/WAF (piano gratuito), SSL, e **nasconde l'IP di casa**. Con Cloudflare Tunnel si evita del tutto il port-forwarding e l'esposizione dell'IP. Dettagli operativi in [05-deployment.md](05-deployment.md).
+**Why:** it's "the web app you install" — a single codebase for phone and desktop, works offline, installs without going through the stores. If one day a real store app is needed, the same PWA is packaged with **Capacitor** without redoing anything.
 
-**Da non dimenticare per la messa online:** HTTPS obbligatorio (richiesto dalla PWA), **login/utenti**, **backup automatici del database**, esporre **solo** la porta del proxy.
+---
+
+## D9 — Everything in Docker
+
+**Decision:** frontend, backend and database **all in containers**, orchestrated by Docker Compose.
+
+**Why:** it eliminates the "environment setup" problem (an explicit concern of the user). Reproducible, isolated, a single command. `psql` is not installed on the machine, but Docker is → Postgres runs in a container with no local installations.
+
+---
+
+## D10 — Project name
+
+**Decision:** working name **`home-manager`**.
+
+**Why:** clear and descriptive. Many names were explored (ShelfLife, PantryPal, Homebase, Domus, Vesta, Hestia, Butler, Steward…) without convincing; the choice was to **start right away** with a working name, since renaming is a trivial operation. The name may change later.
+
+---
+
+## D11 — Deployment: self-hosting from home + Cloudflare
+
+**Decision (plan, to be carried out at the end):** hosting on a **home desktop PC** with a **static IP**, protected by **Cloudflare** (ideally **Cloudflare Tunnel**).
+
+**Why:** the user already has a static IP and an always-on PC. Cloudflare adds anti-bot/DDoS/WAF (free plan), SSL, and **hides the home IP**. With Cloudflare Tunnel, port-forwarding and IP exposure are avoided altogether. Operational details in [05-deployment.md](05-deployment.md).
+
+**Not to forget when going online:** HTTPS mandatory (required by the PWA), **login/users**, **automatic database backups**, expose **only** the proxy port.
