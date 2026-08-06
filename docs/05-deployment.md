@@ -72,3 +72,44 @@ It only requires a **domain managed on Cloudflare** (free plan). Today it is the
 ## 🔮 Beyond the PWA (optional, future)
 
 If one day a **real app** on Google Play / App Store were needed, the same PWA can be packaged with **Capacitor**, without rewriting the frontend.
+
+---
+
+## 🚀 Go-live runbook (Cloudflare Tunnel)
+
+The repo ships a production compose file (`docker-compose.prod.yml`) and a
+Cloudflare Tunnel service, so going online is mostly configuration.
+
+On the home PC (with Docker):
+
+1. **Configure `.env`** (copy from `.env.example`): set a **strong**
+   `POSTGRES_PASSWORD`; leave `TUNNEL_TOKEN` empty for now.
+
+2. **Create a Cloudflare Tunnel** — Cloudflare **Zero Trust → Networks →
+   Tunnels → Create a tunnel** (Cloudflared connector). Copy the **token** it
+   shows and set it in `.env` as `TUNNEL_TOKEN=...`.
+
+3. **Add a Public Hostname** to the tunnel: your domain (e.g.
+   `home.example.com`) → Service **`http://frontend:80`**. Cloudflare provides
+   the HTTPS certificate.
+
+4. **Start the stack:**
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d --build
+   ```
+   No host ports are opened — the app is reachable only through the tunnel. The
+   prod compose already sets `COOKIE_SECURE=true` and `REGISTRATION_OPEN=false`.
+
+5. **Create your admin account:** open `https://home.example.com/register`. The
+   **first** account creates your household and makes you the admin (bootstrap is
+   allowed even with registration closed). After that, new households can't be
+   created publicly — invite family members with the code from the Family page.
+
+6. **Set up backups** (database + uploaded files):
+   ```bash
+   ./scripts/backup.sh docker-compose.prod.yml
+   ```
+   Schedule it with cron (see the script header) and keep copies off-machine.
+
+**Updating later:** `git pull`, then re-run the `up -d --build` command — Flyway
+applies any new migrations and the containers restart.

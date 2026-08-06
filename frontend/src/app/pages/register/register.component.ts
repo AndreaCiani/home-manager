@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
@@ -47,25 +47,31 @@ type Mode = 'join' | 'create';
           class="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
         />
 
-        <!-- Join vs create toggle -->
-        <div class="flex rounded-xl border border-slate-200 p-1 text-sm">
-          <button
-            type="button"
-            class="flex-1 rounded-lg px-3 py-1.5 font-medium transition-colors"
-            [class]="mode() === 'join' ? 'bg-emerald-600 text-white' : 'text-slate-600'"
-            (click)="mode.set('join')"
-          >
-            Join a family
-          </button>
-          <button
-            type="button"
-            class="flex-1 rounded-lg px-3 py-1.5 font-medium transition-colors"
-            [class]="mode() === 'create' ? 'bg-emerald-600 text-white' : 'text-slate-600'"
-            (click)="mode.set('create')"
-          >
-            New household
-          </button>
-        </div>
+        <!-- Join vs create toggle (only when open registration is allowed) -->
+        @if (registrationOpen()) {
+          <div class="flex rounded-xl border border-slate-200 p-1 text-sm">
+            <button
+              type="button"
+              class="flex-1 rounded-lg px-3 py-1.5 font-medium transition-colors"
+              [class]="mode() === 'join' ? 'bg-emerald-600 text-white' : 'text-slate-600'"
+              (click)="mode.set('join')"
+            >
+              Join a family
+            </button>
+            <button
+              type="button"
+              class="flex-1 rounded-lg px-3 py-1.5 font-medium transition-colors"
+              [class]="mode() === 'create' ? 'bg-emerald-600 text-white' : 'text-slate-600'"
+              (click)="mode.set('create')"
+            >
+              New household
+            </button>
+          </div>
+        } @else {
+          <p class="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">
+            Registration is invite-only — enter the code from a family admin.
+          </p>
+        }
 
         @if (mode() === 'join') {
           <input
@@ -111,10 +117,11 @@ type Mode = 'join' | 'create';
     </div>
   `,
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
+  protected readonly registrationOpen = signal(true);
   protected readonly displayName = signal('');
   protected readonly email = signal('');
   protected readonly password = signal('');
@@ -123,6 +130,16 @@ export class RegisterComponent {
   protected readonly mode = signal<Mode>('join');
   protected readonly error = signal<string | null>(null);
   protected readonly submitting = signal(false);
+
+  ngOnInit(): void {
+    this.auth.config().subscribe({
+      next: (cfg) => {
+        this.registrationOpen.set(cfg.registrationOpen);
+        if (!cfg.registrationOpen) this.mode.set('join');
+      },
+      error: () => {},
+    });
+  }
 
   protected canSubmit(): boolean {
     const base = !!this.displayName().trim() && !!this.email().trim() && this.password().length >= 8;

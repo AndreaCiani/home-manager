@@ -30,5 +30,8 @@ Thumbs.db
 # Docker / DB volumes (local data)
 pgdata/
 
+# Backups (database dumps + uploaded files)
+backups/
+
 # Claude Code (local tooling)
 .claude/

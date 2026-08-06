@@ -53,6 +53,11 @@ export class AuthService {
     return this.http.post<void>('/api/auth/change-password', { currentPassword, newPassword });
   }
 
+  /** Public UI hints, e.g. whether open (new-household) registration is allowed. */
+  config(): Observable<{ registrationOpen: boolean }> {
+    return this.http.get<{ registrationOpen: boolean }>('/api/auth/config');
+  }
+
   /** Clears local auth state without a server call (e.g. after a 401). */
   clear(): void {
     this.currentUser.set(null);

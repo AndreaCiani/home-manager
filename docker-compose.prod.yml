@@ -1,0 +1,70 @@
+# Production stack for home-manager, exposed via Cloudflare Tunnel.
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Differences from the local docker-compose.yml:
+#  - No host ports are published — the app is reachable ONLY through the tunnel.
+#  - The session cookie is Secure and registration is invite-only.
+#  - A cloudflared service connects out to Cloudflare (no port-forwarding).
+#
+# Required in .env: POSTGRES_PASSWORD, and TUNNEL_TOKEN (from your Cloudflare
+# Tunnel). In the Cloudflare dashboard, route the public hostname to the
+# service URL  http://frontend:80  .
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-homemanager}
+      POSTGRES_USER: ${POSTGRES_USER:-homemanager}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-homemanager}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-homemanager}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-homemanager}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      # Behind Cloudflare/HTTPS: mark the session cookie Secure.
+      COOKIE_SECURE: "true"
+      # Invite-only: no new households can be created from the public URL.
+      REGISTRATION_OPEN: "false"
+    volumes:
+      - docdata:/data/documents
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # Connects out to Cloudflare; route your public hostname to http://frontend:80
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in .env}
+    depends_on:
+      - frontend
+
+volumes:
+  pgdata:
+  docdata:

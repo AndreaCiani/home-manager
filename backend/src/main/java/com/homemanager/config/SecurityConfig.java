@@ -45,6 +45,7 @@ public class SecurityConfig {
                         // (400/404/409...) aren't turned into 401 by the entry point.
                         .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD).permitAll()
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/config").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf

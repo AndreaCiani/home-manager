@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -45,6 +46,10 @@ public class AuthController {
     private final CurrentUserService currentUser;
     private final SecurityContextRepository securityContextRepository =
             new HttpSessionSecurityContextRepository();
+
+    /** When false, only invite-based joins are allowed (no new households). */
+    @Value("${app.registration.open:true}")
+    private boolean registrationOpen;
 
     public AuthController(UserRepository users, FamilyRepository families, PasswordEncoder passwordEncoder,
                           AuthenticationManager authenticationManager, InviteCodeGenerator inviteCodes,
@@ -79,6 +84,12 @@ public class AuthController {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid invite code"));
             role = Role.MEMBER;
         } else {
+            // When registration is closed, only the very first account may bootstrap
+            // a household; afterwards new households cannot be created publicly.
+            if (!registrationOpen && users.count() > 0) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Registration is invite-only; ask a family admin for an invite code");
+            }
             family = new Family();
             String name = (req.familyName() == null || req.familyName().isBlank())
                     ? "My Home" : req.familyName().trim();
@@ -127,6 +138,12 @@ public class AuthController {
     @GetMapping("/me")
     public UserResponse me() {
         return toUserResponse(currentUser.require());
+    }
+
+    /** Public UI hints (e.g. whether open registration is allowed). */
+    @GetMapping("/config")
+    public java.util.Map<String, Object> config() {
+        return java.util.Map.of("registrationOpen", registrationOpen);
     }
 
     @PostMapping("/change-password")
