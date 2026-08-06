@@ -1,8 +1,12 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { CATEGORIES, Category, Product } from '../../models/product.model';
+import { ShoppingItem } from '../../models/shopping-item.model';
 import { ProductService } from '../../services/product.service';
+import { ShoppingItemService } from '../../services/shopping-item.service';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 
 interface ProductForm {
@@ -110,6 +114,9 @@ type CategoryFilter = 'ALL' | Category;
       @if (error()) {
         <p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{{ error() }}</p>
       }
+      @if (notice()) {
+        <p class="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{{ notice() }}</p>
+      }
 
       @if (loading()) {
         <p class="py-8 text-center text-slate-400">Loading…</p>
@@ -121,7 +128,12 @@ type CategoryFilter = 'ALL' | Category;
           </h3>
           <ul class="mb-6 space-y-2">
             @for (p of expiring(); track p.id) {
-              <app-product-card [product]="p" (edit)="startEdit($event)" (remove)="remove($event)" />
+              <app-product-card
+                [product]="p"
+                (addToShopping)="addToShopping($event)"
+                (edit)="startEdit($event)"
+                (remove)="remove($event)"
+              />
             }
           </ul>
         }
@@ -149,7 +161,12 @@ type CategoryFilter = 'ALL' | Category;
           @if (filtered().length) {
             <ul class="space-y-2">
               @for (p of filtered(); track p.id) {
-                <app-product-card [product]="p" (edit)="startEdit($event)" (remove)="remove($event)" />
+                <app-product-card
+                [product]="p"
+                (addToShopping)="addToShopping($event)"
+                (edit)="startEdit($event)"
+                (remove)="remove($event)"
+              />
               }
             </ul>
           } @else {
@@ -164,6 +181,7 @@ type CategoryFilter = 'ALL' | Category;
 })
 export class PantryComponent implements OnInit {
   private readonly service = inject(ProductService);
+  private readonly shoppingService = inject(ShoppingItemService);
 
   protected readonly categories = CATEGORIES;
   protected form: ProductForm = emptyForm();
@@ -173,6 +191,11 @@ export class PantryComponent implements OnInit {
   protected readonly products = signal<Product[]>([]);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
+  protected readonly notice = signal<string | null>(null);
+
+  /** Lowercased names of items already on the shopping list and not yet purchased. */
+  private readonly activeShoppingNames = signal<Set<string>>(new Set());
+  private noticeTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** Products expiring within the threshold (including already expired), most urgent first. */
   protected readonly expiring = computed(() => {
@@ -196,9 +219,15 @@ export class PantryComponent implements OnInit {
 
   private load(): void {
     this.loading.set(true);
-    this.service.list().subscribe({
-      next: (products) => {
+    // Products are required; the shopping list is best-effort (only used for
+    // the duplicate check), so a failure there must not break the pantry.
+    forkJoin({
+      products: this.service.list(),
+      shopping: this.shoppingService.list().pipe(catchError(() => of([] as ShoppingItem[]))),
+    }).subscribe({
+      next: ({ products, shopping }) => {
         this.products.set(products);
+        this.setActiveShopping(shopping);
         this.loading.set(false);
       },
       error: () => {
@@ -206,6 +235,12 @@ export class PantryComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  private setActiveShopping(items: ShoppingItem[]): void {
+    this.activeShoppingNames.set(
+      new Set(items.filter((i) => !i.purchased).map((i) => i.name.trim().toLowerCase())),
+    );
   }
 
   protected chipClass(value: CategoryFilter): string {
@@ -270,5 +305,33 @@ export class PantryComponent implements OnInit {
       next: () => this.products.update((p) => p.filter((x) => x.id !== product.id)),
       error: () => this.error.set('Could not remove the product. Please try again.'),
     });
+  }
+
+  /** "Ran out" → add the product to the shopping list (carrying its quantity). */
+  protected addToShopping(product: Product): void {
+    this.error.set(null);
+    const key = product.name.trim().toLowerCase();
+    if (this.activeShoppingNames().has(key)) {
+      this.showNotice(`"${product.name}" is already on your shopping list.`);
+      return;
+    }
+    const item: ShoppingItem = {
+      name: product.name,
+      quantity: product.quantity ?? null,
+      purchased: false,
+    };
+    this.shoppingService.add(item).subscribe({
+      next: () => {
+        this.activeShoppingNames.update((s) => new Set(s).add(key));
+        this.showNotice(`Added "${product.name}" to your shopping list. 🛒`);
+      },
+      error: () => this.error.set('Could not add to the shopping list. Please try again.'),
+    });
+  }
+
+  private showNotice(message: string): void {
+    this.notice.set(message);
+    if (this.noticeTimer) clearTimeout(this.noticeTimer);
+    this.noticeTimer = setTimeout(() => this.notice.set(null), 3500);
   }
 }

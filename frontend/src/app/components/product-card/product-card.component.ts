@@ -29,6 +29,15 @@ import { daysToExpiry, expiryColorClass, expiryLabel } from '../../models/expiry
       <div class="flex shrink-0 gap-1">
         <button
           type="button"
+          class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-emerald-50 hover:text-emerald-600"
+          (click)="addToShopping.emit(product())"
+          [attr.aria-label]="'Add ' + product().name + ' to shopping list'"
+          title="Add to shopping list"
+        >
+          🛒
+        </button>
+        <button
+          type="button"
           class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
           (click)="edit.emit(product())"
           [attr.aria-label]="'Edit ' + product().name"
@@ -49,6 +58,7 @@ import { daysToExpiry, expiryColorClass, expiryLabel } from '../../models/expiry
 })
 export class ProductCardComponent {
   readonly product = input.required<Product>();
+  readonly addToShopping = output<Product>();
   readonly edit = output<Product>();
   readonly remove = output<Product>();
 
