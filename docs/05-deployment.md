@@ -25,8 +25,9 @@ Tools that make this much easier: **Caddy** (automatic HTTPS) or directly **Clou
 
 ### 2. 🛡️ Security
 - Expose **only** the proxy port (443). **Never** expose PostgreSQL or the Spring Boot port directly.
-- Add a **login** to the app (Users & Family module) before opening it to the Internet.
-- Keep the containers up to date.
+- ✅ **Login is in place** (Users & Family module): session cookies, BCrypt, CSRF, and per-family data isolation.
+- ⚠️ **Registration is currently open** — anyone who reaches the app can create a household. Before exposing it publicly, decide whether to restrict sign-up (e.g. invite-only, an allow-list, or an extra network gate in front of Cloudflare).
+- Change the default database password (`.env`) and keep the containers up to date.
 
 ### 3. 📡 ISP check
 Check that the provider doesn't block ports **80/443 inbound** (some do, even with a static IP). With Cloudflare Tunnel (below) the problem is bypassed entirely.

@@ -61,9 +61,47 @@ DELETE /api/shopping-items/{id}   remove item
 ```
 
 ### "Later" ideas (same module)
-- Suggestion: when a pantry product runs out → quick add to the shopping list
-- Barcode scanner to add items quickly
+- ✅ Suggestion: when a pantry product runs out → quick add to the shopping list
+- ✅ Barcode scanner to add items quickly
 - Recipe suggestions using what is about to expire
+
+---
+
+## ✅ Module 2 — Users & Family
+
+Accounts and households, so data is shared within a family and protected from everyone else. This module is what makes it safe to put the app online.
+
+### Features
+
+1. **Authentication** — register, log in, log out; session cookies (HttpOnly) with BCrypt-hashed passwords and CSRF protection.
+2. **Households (families)** — every user belongs to one family; the shopping list and pantry are private to that family.
+3. **Invite-based registration** — creating an account either starts a **new household** (you become its admin) or **joins an existing one** with its invite code.
+4. **Roles & management** — `ADMIN` / `MEMBER`; admins see and regenerate the invite code, promote/demote members, and remove members (a family always keeps at least one admin).
+5. **Account** — change your own password.
+
+### Data model
+
+**Family** — id, name, inviteCode (unique), createdAt.
+**User** (table `app_user`) — id, email (unique), displayName, passwordHash (BCrypt), role (ADMIN/MEMBER), family, createdAt.
+
+`Product` and `ShoppingItem` gain a `family` and are always filtered by the caller's family; a shopping item also records who added it.
+
+### Endpoints
+
+```
+POST   /api/auth/register           create a household, or join one with an invite code
+POST   /api/auth/login              sign in
+POST   /api/auth/logout             sign out
+GET    /api/auth/me                 current user
+POST   /api/auth/change-password    change own password
+
+GET    /api/family                          family + members (invite code for admins)
+POST   /api/family/invite-code/regenerate   rotate the invite code (admin)
+PUT    /api/family/members/{id}/role        promote/demote a member (admin)
+DELETE /api/family/members/{id}             remove a member (admin)
+```
+
+> Note: registration is open — anyone can create a household or join one with a code. Before exposing the app publicly, decide whether to restrict who can register (see [05-deployment.md](05-deployment.md)).
 
 ---
 
@@ -77,6 +115,5 @@ Ideas, not commitments. The order will be decided based on real usefulness.
 | 🧹 **Household chores** | Who does what, rotations, recurrences |
 | 💰 **Household budget** | Family expenses, trends, categories |
 | 📄 **Documents & Maintenance** | Archive of household documents, maintenance deadlines |
-| 🔑 **Users & Family** | Login, family profiles, permissions (enables real shared use and safe going-online) |
 
-> Note: the **Users & Family** module is cross-cutting and becomes necessary before public going-online (to protect access). See [05-deployment.md](05-deployment.md).
+> Note: **Users & Family** (above) is already in place — it's the cross-cutting module that protects access before going online. See [05-deployment.md](05-deployment.md).

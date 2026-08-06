@@ -23,6 +23,12 @@ public final class AuthDtos {
 
     public record LoginRequest(@NotBlank String email, @NotBlank String password) {}
 
+    public record ChangePasswordRequest(
+            @NotBlank String currentPassword,
+            @NotBlank @Size(min = 8, message = "Password must be at least 8 characters") String newPassword) {}
+
+    public record RoleUpdateRequest(@NotBlank String role) {}
+
     public record UserResponse(
             Long id,
             String email,

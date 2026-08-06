@@ -87,7 +87,7 @@ type Mode = 'join' | 'create';
             class="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
           />
           <p class="text-xs text-slate-400">
-            Only the first account can create a household; you'll be its admin.
+            Creates a new household — you'll be its admin and can invite others.
           </p>
         }
 
@@ -155,7 +155,7 @@ export class RegisterComponent {
       case 409:
         return 'That email is already registered.';
       case 400:
-        return 'Invalid or missing invite code. If you are the first user, choose "New household".';
+        return 'That invite code is not valid.';
       default:
         return 'Could not create your account. Please try again.';
     }

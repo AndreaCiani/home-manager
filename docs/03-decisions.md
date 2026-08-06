@@ -101,3 +101,31 @@ This document records **all the choices** made during the ideation phase, along 
 **Why:** the user already has a static IP and an always-on PC. Cloudflare adds anti-bot/DDoS/WAF (free plan), SSL, and **hides the home IP**. With Cloudflare Tunnel, port-forwarding and IP exposure are avoided altogether. Operational details in [05-deployment.md](05-deployment.md).
 
 **Not to forget when going online:** HTTPS mandatory (required by the PWA), **login/users**, **automatic database backups**, expose **only** the proxy port.
+
+---
+
+## D12 — Authentication: session cookies (not JWT)
+
+**Decision:** **session-based authentication** with Spring Security — an HttpOnly session cookie, BCrypt-hashed passwords, and cookie-based **CSRF** protection (Angular's built-in XSRF support echoes the token).
+
+**Alternative discussed:** stateless **JWT**.
+
+**Why:** the frontend and backend are same-origin (Nginx serves the app and proxies `/api`), so a session cookie is simpler and safer than JWT — no token storage in the SPA, no refresh logic, no XSS-exposed tokens. JWT would add complexity that only pays off for cross-domain APIs or native clients, which we don't have.
+
+---
+
+## D13 — Households: one family per user, invite-based, multiple households
+
+**Decision:** every user belongs to **one family**; all Shopping & Pantry data is **scoped to that family**. Registration either **creates a new household** (the user becomes its admin) or **joins an existing one** with its **invite code**.
+
+**Path:** we first considered a single, closed household bootstrapped by the very first account. It was then opened up so that **multiple separate households** can coexist (anyone can create one), which is the natural multi-tenant shape.
+
+**Consequence:** registration is effectively open. Restricting who can register is a decision deferred to just before public deployment (see [05-deployment.md](05-deployment.md)).
+
+---
+
+## D14 — Roles: ADMIN / MEMBER
+
+**Decision:** two roles. **ADMIN** manages the family (invite code, promote/demote members, remove members); **MEMBER** uses the shared data. A family must always keep **at least one admin**, and a user cannot remove themselves.
+
+**Why:** a small, understandable permission model that fits a household. Finer-grained permissions can come later if a real need appears.

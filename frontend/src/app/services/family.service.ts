@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { Family } from '../models/user.model';
+import { Family, Role } from '../models/user.model';
 
 /**
  * The current user's family: members and (for admins) the invite code.
@@ -18,5 +18,13 @@ export class FamilyService {
 
   regenerateInviteCode(): Observable<Family> {
     return this.http.post<Family>(`${this.baseUrl}/invite-code/regenerate`, {});
+  }
+
+  removeMember(userId: number): Observable<Family> {
+    return this.http.delete<Family>(`${this.baseUrl}/members/${userId}`);
+  }
+
+  setMemberRole(userId: number, role: Role): Observable<Family> {
+    return this.http.put<Family>(`${this.baseUrl}/members/${userId}/role`, { role });
   }
 }

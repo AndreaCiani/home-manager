@@ -2,6 +2,7 @@ package com.homemanager.family.controller;
 
 import com.homemanager.family.dto.AuthDtos.FamilyResponse;
 import com.homemanager.family.dto.AuthDtos.MemberResponse;
+import com.homemanager.family.dto.AuthDtos.RoleUpdateRequest;
 import com.homemanager.family.model.Family;
 import com.homemanager.family.model.Role;
 import com.homemanager.family.model.User;
@@ -9,6 +10,7 @@ import com.homemanager.family.repository.FamilyRepository;
 import com.homemanager.family.repository.UserRepository;
 import com.homemanager.family.security.CurrentUserService;
 import com.homemanager.family.security.InviteCodeGenerator;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -52,6 +54,57 @@ public class FamilyController {
         family.setInviteCode(inviteCodes.unique());
         families.save(family);
         return toFamilyResponse(me);
+    }
+
+    /** Admin removes another member from the family. */
+    @DeleteMapping("/members/{userId}")
+    public FamilyResponse removeMember(@PathVariable Long userId) {
+        User me = requireAdmin();
+        User target = requireSameFamilyMember(me, userId);
+        if (target.getId().equals(me.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot remove yourself");
+        }
+        users.delete(target);
+        return toFamilyResponse(me);
+    }
+
+    /** Admin promotes/demotes a member, keeping at least one admin in the family. */
+    @PutMapping("/members/{userId}/role")
+    public FamilyResponse setMemberRole(@PathVariable Long userId, @Valid @RequestBody RoleUpdateRequest req) {
+        User me = requireAdmin();
+        User target = requireSameFamilyMember(me, userId);
+        Role newRole;
+        try {
+            newRole = Role.valueOf(req.role().trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid role");
+        }
+        if (target.getRole() == Role.ADMIN && newRole == Role.MEMBER && adminCount(me.getFamily().getId()) <= 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The family must keep at least one admin");
+        }
+        target.setRole(newRole);
+        users.save(target);
+        return toFamilyResponse(me);
+    }
+
+    private User requireAdmin() {
+        User me = currentUser.require();
+        if (me.getRole() != Role.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can manage members");
+        }
+        return me;
+    }
+
+    private User requireSameFamilyMember(User me, Long userId) {
+        return users.findById(userId)
+                .filter(u -> u.getFamily().getId().equals(me.getFamily().getId()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    private long adminCount(Long familyId) {
+        return users.findByFamilyIdOrderByCreatedAtAsc(familyId).stream()
+                .filter(u -> u.getRole() == Role.ADMIN)
+                .count();
     }
 
     private FamilyResponse toFamilyResponse(User me) {

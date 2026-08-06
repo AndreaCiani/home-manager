@@ -1,5 +1,6 @@
 package com.homemanager.family.controller;
 
+import com.homemanager.family.dto.AuthDtos.ChangePasswordRequest;
 import com.homemanager.family.dto.AuthDtos.LoginRequest;
 import com.homemanager.family.dto.AuthDtos.RegisterRequest;
 import com.homemanager.family.dto.AuthDtos.UserResponse;
@@ -68,9 +69,16 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "This email is already registered");
         }
 
+        // With an invite code you join an existing household; otherwise you
+        // create a new one (and become its admin).
         Family family;
         Role role;
-        if (users.count() == 0) {
+        String code = req.inviteCode() == null ? "" : req.inviteCode().trim();
+        if (!code.isEmpty()) {
+            family = families.findByInviteCode(code)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid invite code"));
+            role = Role.MEMBER;
+        } else {
             family = new Family();
             String name = (req.familyName() == null || req.familyName().isBlank())
                     ? "My Home" : req.familyName().trim();
@@ -78,14 +86,6 @@ public class AuthController {
             family.setInviteCode(inviteCodes.unique());
             family = families.save(family);
             role = Role.ADMIN;
-        } else {
-            String code = req.inviteCode() == null ? "" : req.inviteCode().trim();
-            if (code.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "An invite code is required");
-            }
-            family = families.findByInviteCode(code)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid invite code"));
-            role = Role.MEMBER;
         }
 
         User user = new User();
@@ -127,6 +127,17 @@ public class AuthController {
     @GetMapping("/me")
     public UserResponse me() {
         return toUserResponse(currentUser.require());
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest req) {
+        User user = currentUser.require();
+        if (!passwordEncoder.matches(req.currentPassword(), user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+        }
+        user.setPasswordHash(passwordEncoder.encode(req.newPassword()));
+        users.save(user);
+        return ResponseEntity.noContent().build();
     }
 
     /** Authenticates and persists the security context into the session. */

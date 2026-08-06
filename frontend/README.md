@@ -32,14 +32,20 @@ frontend/
 ├── ngsw-config.json        📱 service worker configuration (PWA)
 └── src/
     ├── app/
-    │   ├── models/         🧩 types mirroring the backend entities (Product, ShoppingItem)
-    │   ├── services/       🔗 HTTP calls to /api (ProductService, ShoppingItemService)
-    │   ├── components/     🧱 reusable pieces (product card, list row)
+    │   ├── models/         🧩 types mirroring the backend entities (Product, ShoppingItem, User, Family)
+    │   ├── services/       🔗 HTTP calls to /api (products, shopping, auth, family, lookup)
+    │   ├── components/     🧱 reusable pieces (product card, list row, barcode scanner)
+    │   ├── guards/         🔒 route protection (auth / guest)
+    │   ├── interceptors/   🔌 401 handling
     │   ├── pages/
+    │   │   ├── dashboard/      🏠 overview
     │   │   ├── shopping-list/  🛒 shared list
-    │   │   └── pantry/         📦 inventory + expiry
-    │   ├── app.component.ts    shell: header + navigation
-    │   └── app.routes.ts       routes (/shopping, /pantry)
+    │   │   ├── pantry/         📦 inventory + expiry
+    │   │   ├── login/          🔑 sign in
+    │   │   ├── register/       🧑‍🤝‍🧑 create/join a household
+    │   │   └── family/         👪 members, invite code, password
+    │   ├── app.component.ts    shell: header + navigation (when signed in)
+    │   └── app.routes.ts       routes (guarded)
     ├── styles.css           @tailwind directives + global styles
     ├── index.html
     └── public/

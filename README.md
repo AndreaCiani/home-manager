@@ -76,9 +76,10 @@ home-manager/
 
 ## 🗺️ Project status
 
-🏗️ **Current phase:** Module 1 — Shopping & Pantry under construction.
+🏗️ **Current phase:** Modules 1 and 2 in place; hardening for going online next.
 
-- ☕ **Backend**: complete REST API for the shopping list and pantry (CRUD + expiring products).
-- 🅰️ **Frontend**: Angular 19 + Tailwind (PWA) app generated, with the 🛒 Shopping list and 📦 Pantry pages wired to the APIs. See [frontend/README.md](frontend/README.md).
+- ☕ **Backend**: REST API for the shopping list and pantry (CRUD + expiring products), plus **authentication & families** (Spring Security, session cookies, BCrypt, CSRF).
+- 🅰️ **Frontend**: Angular 19 + Tailwind (PWA) with Home, 🛒 Shopping list, 📦 Pantry, and account/family screens (login, registration, member management). See [frontend/README.md](frontend/README.md).
+- 🔑 **Accounts & families**: invite-based registration; each household's data is private to its members; admins manage members and the invite code.
 
-Next steps: polish Module 1 (tests, small UX improvements) and evaluate the first follow-up module from the [roadmap](docs/04-modules.md).
+Next steps: prepare for **going online** ([deployment](docs/05-deployment.md)) — HTTPS via Cloudflare, database backups — and keep refining the modules.

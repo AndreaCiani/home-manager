@@ -28,6 +28,7 @@ Three services, all containerized and orchestrated by **Docker Compose**. A sing
 - Exposes a **REST API** under `/api` (e.g. `/api/products`, `/api/shopping-items`).
 - **Spring Data JPA** for database access (repositories generated automatically).
 - **Bean Validation** to validate incoming data.
+- **Spring Security** for authentication (session cookies, BCrypt, CSRF): every `/api/**` endpoint requires login except register/login, and all data is scoped to the caller's family (Module 2).
 - Configured via environment variables (see `.env.example`).
 
 ### 🐘 Database — PostgreSQL 16
@@ -67,18 +68,24 @@ In development you can work comfortably with hot reload; Docker Compose is mainl
 ```
 backend/src/main/java/com/homemanager/
 ├── HomeManagerApplication.java      entry point
-├── config/                          configuration (CORS, etc.)
-└── pantry/                          MODULE 1: Shopping & Pantry
-    ├── model/                       entities (Product, ShoppingItem)
+├── config/                          configuration (CORS, Spring Security)
+├── pantry/                          MODULE 1: Shopping & Pantry
+│   ├── model/                       entities (Product, ShoppingItem)
+│   ├── repository/                  data access (JPA)
+│   └── controller/                  REST endpoints
+└── family/                          MODULE 2: Users & Family
+    ├── model/                       entities (User, Family, Role)
     ├── repository/                  data access (JPA)
-    ├── controller/                  REST endpoints
-    └── dto/                         data transfer objects (input/output)
+    ├── controller/                  auth & family endpoints
+    ├── dto/                         request/response payloads
+    └── security/                    user details, current user, CSRF, invite codes
 
-frontend/src/                        (generated with "ng new", see frontend/README.md)
-└── app/
-    ├── pages/                       screens: pantry, shopping list
-    ├── components/                  reusable pieces (product card, list row)
-    └── services/                    HTTP calls to the backend
+frontend/src/app/
+├── pages/                           dashboard, shopping list, pantry, login, register, family
+├── components/                      reusable pieces (product card, list row, barcode scanner)
+├── services/                        HTTP calls (products, shopping, auth, family, lookup)
+├── guards/                          route protection (auth / guest)
+└── interceptors/                    401 handling
 ```
 
 Every future module will follow the same layout (one folder per module, on both backend and frontend), to keep the project tidy as it grows.

@@ -49,6 +49,10 @@ export class AuthService {
       .pipe(tap(() => this.currentUser.set(null)));
   }
 
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.http.post<void>('/api/auth/change-password', { currentPassword, newPassword });
+  }
+
   /** Clears local auth state without a server call (e.g. after a 401). */
   clear(): void {
     this.currentUser.set(null);
