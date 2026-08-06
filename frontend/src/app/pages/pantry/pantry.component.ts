@@ -21,6 +21,12 @@ function emptyForm(): ProductForm {
   return { name: '', quantity: null, unit: '', category: 'OTHER', expiryDate: '' };
 }
 
+/** A confirmation banner, optionally offering to remove a product from the pantry. */
+interface PantryNotice {
+  message: string;
+  removeId: number | null;
+}
+
 /** Threshold (days) within which a product is considered "expiring". */
 const EXPIRY_THRESHOLD = 7;
 
@@ -114,8 +120,27 @@ type CategoryFilter = 'ALL' | Category;
       @if (error()) {
         <p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{{ error() }}</p>
       }
-      @if (notice()) {
-        <p class="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{{ notice() }}</p>
+      @if (notice(); as n) {
+        <div class="mb-4 flex items-center gap-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <span class="flex-1">{{ n.message }}</span>
+          @if (n.removeId !== null) {
+            <button
+              type="button"
+              class="shrink-0 font-medium text-red-600 transition-colors hover:underline"
+              (click)="removeFromPantry(n.removeId)"
+            >
+              Remove from pantry
+            </button>
+          }
+          <button
+            type="button"
+            class="shrink-0 leading-none text-emerald-700/60 transition-colors hover:text-emerald-900"
+            (click)="dismissNotice()"
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
       }
 
       @if (loading()) {
@@ -191,11 +216,10 @@ export class PantryComponent implements OnInit {
   protected readonly products = signal<Product[]>([]);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
-  protected readonly notice = signal<string | null>(null);
+  protected readonly notice = signal<PantryNotice | null>(null);
 
   /** Lowercased names of items already on the shopping list and not yet purchased. */
   private readonly activeShoppingNames = signal<Set<string>>(new Set());
-  private noticeTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** Products expiring within the threshold (including already expired), most urgent first. */
   protected readonly expiring = computed(() => {
@@ -310,9 +334,11 @@ export class PantryComponent implements OnInit {
   /** "Ran out" → add the product to the shopping list (carrying its quantity). */
   protected addToShopping(product: Product): void {
     this.error.set(null);
+    this.notice.set(null);
+    const removeId = product.id ?? null;
     const key = product.name.trim().toLowerCase();
     if (this.activeShoppingNames().has(key)) {
-      this.showNotice(`"${product.name}" is already on your shopping list.`);
+      this.showNotice(`"${product.name}" is already on your shopping list.`, removeId);
       return;
     }
     const item: ShoppingItem = {
@@ -323,15 +349,24 @@ export class PantryComponent implements OnInit {
     this.shoppingService.add(item).subscribe({
       next: () => {
         this.activeShoppingNames.update((s) => new Set(s).add(key));
-        this.showNotice(`Added "${product.name}" to your shopping list. 🛒`);
+        this.showNotice(`Added "${product.name}" to your shopping list. 🛒`, removeId);
       },
       error: () => this.error.set('Could not add to the shopping list. Please try again.'),
     });
   }
 
-  private showNotice(message: string): void {
-    this.notice.set(message);
-    if (this.noticeTimer) clearTimeout(this.noticeTimer);
-    this.noticeTimer = setTimeout(() => this.notice.set(null), 3500);
+  private showNotice(message: string, removeId: number | null = null): void {
+    this.notice.set({ message, removeId });
+  }
+
+  protected dismissNotice(): void {
+    this.notice.set(null);
+  }
+
+  /** Remove a product from the pantry as a follow-up to "ran out" (from the notice). */
+  protected removeFromPantry(id: number): void {
+    const product = this.products().find((p) => p.id === id);
+    this.notice.set(null);
+    if (product) this.remove(product);
   }
 }
