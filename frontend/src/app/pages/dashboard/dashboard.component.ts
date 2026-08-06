@@ -12,6 +12,7 @@ import { ShoppingItemService } from '../../services/shopping-item.service';
 import { DeadlineService } from '../../services/deadline.service';
 import { ChoreService } from '../../services/chore.service';
 import { ExpenseService } from '../../services/expense.service';
+import { DocumentService } from '../../services/document.service';
 import { daysToExpiry, expiryColorClass, expiryLabel } from '../../models/expiry.util';
 
 /** Threshold (days) within which a product is considered "expiring". */
@@ -65,6 +66,11 @@ const PREVIEW = 5;
           <p class="text-2xl" aria-hidden="true">💰</p>
           <p class="mt-1 font-semibold text-slate-800">Budget</p>
           <p class="text-xs text-slate-500">{{ loading() ? '…' : (budgetTotal() | currency: 'EUR') + ' this month' }}</p>
+        </a>
+        <a routerLink="/documents" class="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-emerald-300">
+          <p class="text-2xl" aria-hidden="true">📄</p>
+          <p class="mt-1 font-semibold text-slate-800">Documents</p>
+          <p class="text-xs text-slate-500">{{ loading() ? '…' : documentCount() + ' stored' }}</p>
         </a>
       </div>
 
@@ -149,6 +155,7 @@ export class DashboardComponent implements OnInit {
   private readonly deadlineService = inject(DeadlineService);
   private readonly choreService = inject(ChoreService);
   private readonly expenseService = inject(ExpenseService);
+  private readonly documentService = inject(DocumentService);
 
   protected readonly PREVIEW = PREVIEW;
 
@@ -157,6 +164,7 @@ export class DashboardComponent implements OnInit {
   protected readonly dueSoon = signal<Deadline[]>([]);
   protected readonly chores = signal<Chore[]>([]);
   protected readonly budgetTotal = signal(0);
+  protected readonly documentCount = signal(0);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
 
@@ -186,13 +194,15 @@ export class DashboardComponent implements OnInit {
       deadlines: this.deadlineService.upcoming(),
       chores: this.choreService.list(),
       budget: this.expenseService.summary(),
+      documents: this.documentService.list(),
     }).subscribe({
-      next: ({ products, items, deadlines, chores, budget }) => {
+      next: ({ products, items, deadlines, chores, budget, documents }) => {
         this.products.set(products);
         this.items.set(items);
         this.dueSoon.set(deadlines);
         this.chores.set(chores);
         this.budgetTotal.set(budget.total);
+        this.documentCount.set(documents.length);
         this.loading.set(false);
       },
       error: () => {

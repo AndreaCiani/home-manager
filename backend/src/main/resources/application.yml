@@ -18,6 +18,16 @@ spring:
         format_sql: true
     open-in-view: false
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
+
+# Where uploaded document files are stored (a Docker volume in production).
+app:
+  storage:
+    dir: ${APP_STORAGE_DIR:/data/documents}
+
 server:
   port: 8080
   servlet:

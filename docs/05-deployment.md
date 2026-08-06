@@ -59,6 +59,7 @@ It only requires a **domain managed on Cloudflare** (free plan). Today it is the
 ## 💾 Not to forget
 
 - **Automatic database backups** — this is the family's data. Schedule a periodic PostgreSQL dump (e.g. a scheduled `pg_dump`) saved in a safe place.
+- **Uploaded files backup** — the Documents module stores real files on the `docdata` Docker volume. Back it up too (the database only holds their metadata).
 - **Secrets management** — the DB password and the like in `.env` (never in the repository).
 - **Monitoring/uptime** — optional, a simple check that alerts you if the app goes down.
 

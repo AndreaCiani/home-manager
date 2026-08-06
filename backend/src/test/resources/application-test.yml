@@ -8,3 +8,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+# Uploaded files go under the build directory during tests.
+app:
+  storage:
+    dir: target/test-documents

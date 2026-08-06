@@ -42,6 +42,9 @@ services:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db:5432/homemanager}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-homemanager}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-homemanager}
+    # Uploaded document files persist in a named volume.
+    volumes:
+      - docdata:/data/documents
     ports:
       - "8080:8080"
 
@@ -59,3 +62,4 @@ services:
 
 volumes:
   pgdata:
+  docdata:

@@ -57,6 +57,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/budget/budget.component').then((m) => m.BudgetComponent),
   },
   {
+    path: 'documents',
+    canActivate: [authGuard],
+    title: 'Documents · home-manager',
+    loadComponent: () =>
+      import('./pages/documents/documents.component').then((m) => m.DocumentsComponent),
+  },
+  {
     path: 'family',
     canActivate: [authGuard],
     title: 'Family · home-manager',

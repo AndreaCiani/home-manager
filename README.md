@@ -82,6 +82,6 @@ home-manager/
 - 🅰️ **Frontend**: Angular 19 + Tailwind (PWA) with Home, 🛒 Shopping list, 📦 Pantry, 📅 Deadlines & Bills, and account/family screens. End-to-end tested with Playwright ([e2e/](e2e/)).
 - 🔑 **Accounts & families**: invite-based registration; each household's data is private to its members; admins manage members and the invite code.
 
-Modules delivered: **1 — Shopping & Pantry**, **2 — Users & Family**, **3 — Deadlines & Bills**, **4 — Household Chores**, **5 — Household Budget** (see [docs/04-modules.md](docs/04-modules.md)).
+Modules delivered: **1 — Shopping & Pantry**, **2 — Users & Family**, **3 — Deadlines & Bills**, **4 — Household Chores**, **5 — Household Budget**, **6 — Documents & Maintenance** (see [docs/04-modules.md](docs/04-modules.md)).
 
 Next steps: prepare for **going online** ([deployment](docs/05-deployment.md)) — HTTPS via Cloudflare, database backups — and continue the roadmap.

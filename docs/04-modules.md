@@ -185,12 +185,42 @@ DELETE /api/expenses/{id}       remove
 
 ---
 
+## ✅ Module 6 — Documents & Maintenance
+
+An archive of household documents (with the actual files uploaded) plus an
+optional renewal/maintenance date per document.
+
+### Features
+
+1. **File upload** — PDF and images (PNG/JPEG/WEBP), up to 10 MB, stored on a
+   dedicated Docker volume. Files are named with a generated UUID (never the
+   client's filename) and served only through an authenticated, family-scoped
+   download endpoint.
+2. **Metadata** — name, category (identity, insurance, warranty, contract,
+   manual, medical, other), optional renewal date, and notes.
+
+### Data model
+
+**Document** — id, name, category, expiryDate (renewal, optional), notes, file
+metadata (originalFilename, contentType, sizeBytes; the internal storage name
+is never exposed), family (scoped per household), createdAt.
+
+### Endpoints
+
+```
+GET    /api/documents           document metadata (most recent first)
+POST   /api/documents           upload a file + metadata (multipart/form-data)
+GET    /api/documents/{id}/file download the stored file
+PUT    /api/documents/{id}      edit metadata
+DELETE /api/documents/{id}      remove (also deletes the file)
+```
+
+---
+
 ## 🔜 Future modules (roadmap)
 
-Ideas, not commitments. The order will be decided based on real usefulness.
-
-| Module | What it does |
-|---|---|
-| 📄 **Documents & Maintenance** | Archive of household documents, maintenance deadlines |
+All the modules originally sketched are now in place. New ideas can be added
+here as real needs emerge — each follows the same one-folder-per-module,
+family-scoped pattern.
 
 > Note: **Users & Family** is already in place — it's the cross-cutting module that protects access before going online. See [05-deployment.md](05-deployment.md).
