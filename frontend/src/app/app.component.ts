@@ -29,6 +29,17 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
       >
         <div class="mx-auto flex max-w-2xl">
           <a
+            routerLink="/"
+            routerLinkActive="text-emerald-600"
+            [routerLinkActiveOptions]="{ exact: true }"
+            #home="routerLinkActive"
+            class="flex flex-1 flex-col items-center gap-1 py-3 text-sm text-slate-500 transition-colors"
+            [attr.aria-current]="home.isActive ? 'page' : null"
+          >
+            <span class="text-xl" aria-hidden="true">🏠</span>
+            Home
+          </a>
+          <a
             routerLink="/shopping"
             routerLinkActive="text-emerald-600"
             #shopping="routerLinkActive"

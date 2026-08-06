@@ -5,7 +5,7 @@ import { CATEGORIES, Category, Product } from '../../models/product.model';
 import { ProductService } from '../../services/product.service';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 
-interface NewProduct {
+interface ProductForm {
   name: string;
   quantity: number | null;
   unit: string;
@@ -13,16 +13,19 @@ interface NewProduct {
   expiryDate: string;
 }
 
-function emptyForm(): NewProduct {
+function emptyForm(): ProductForm {
   return { name: '', quantity: null, unit: '', category: 'OTHER', expiryDate: '' };
 }
 
 /** Threshold (days) within which a product is considered "expiring". */
 const EXPIRY_THRESHOLD = 7;
 
+type CategoryFilter = 'ALL' | Category;
+
 /**
  * 📦 Pantry: inventory of products at home with quantity, category and
  * expiry dates. Expiring (or expired) items show first to help reduce waste.
+ * Products can be filtered by category and edited in place.
  */
 @Component({
   selector: 'app-pantry',
@@ -31,12 +34,15 @@ const EXPIRY_THRESHOLD = 7;
     <section>
       <h2 class="mb-4 text-xl font-bold">📦 Pantry</h2>
 
-      <!-- Add form -->
-      <form (ngSubmit)="add()" class="mb-6 space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+      <!-- Add / edit form -->
+      <form (ngSubmit)="submit()" class="mb-6 space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+        @if (editingId() !== null) {
+          <p class="text-sm font-semibold text-emerald-700">✏️ Editing product</p>
+        }
         <input
           type="text"
           name="name"
-          [(ngModel)]="newProduct.name"
+          [(ngModel)]="form.name"
           placeholder="Product name (e.g. Milk)"
           autocomplete="off"
           class="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -46,7 +52,7 @@ const EXPIRY_THRESHOLD = 7;
           <input
             type="number"
             name="quantity"
-            [(ngModel)]="newProduct.quantity"
+            [(ngModel)]="form.quantity"
             placeholder="Quantity"
             min="0"
             step="any"
@@ -55,7 +61,7 @@ const EXPIRY_THRESHOLD = 7;
           <input
             type="text"
             name="unit"
-            [(ngModel)]="newProduct.unit"
+            [(ngModel)]="form.unit"
             placeholder="Unit (pcs, L, kg)"
             autocomplete="off"
             class="min-w-0 flex-1 rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
@@ -65,7 +71,7 @@ const EXPIRY_THRESHOLD = 7;
         <div class="flex gap-2">
           <select
             name="category"
-            [(ngModel)]="newProduct.category"
+            [(ngModel)]="form.category"
             class="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2.5 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
           >
             @for (cat of categories; track cat.value) {
@@ -75,19 +81,30 @@ const EXPIRY_THRESHOLD = 7;
           <input
             type="date"
             name="expiryDate"
-            [(ngModel)]="newProduct.expiryDate"
+            [(ngModel)]="form.expiryDate"
             aria-label="Expiry date"
             class="min-w-0 flex-1 rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
           />
         </div>
 
-        <button
-          type="submit"
-          [disabled]="!newProduct.name.trim()"
-          class="w-full rounded-xl bg-emerald-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-40"
-        >
-          Add to pantry
-        </button>
+        <div class="flex gap-2">
+          <button
+            type="submit"
+            [disabled]="!form.name.trim()"
+            class="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-40"
+          >
+            {{ editingId() === null ? 'Add to pantry' : 'Save changes' }}
+          </button>
+          @if (editingId() !== null) {
+            <button
+              type="button"
+              class="shrink-0 rounded-xl border border-slate-300 px-4 py-2.5 font-medium text-slate-600 transition-colors hover:bg-slate-100"
+              (click)="cancelEdit()"
+            >
+              Cancel
+            </button>
+          }
+        </div>
       </form>
 
       @if (error()) {
@@ -104,21 +121,40 @@ const EXPIRY_THRESHOLD = 7;
           </h3>
           <ul class="mb-6 space-y-2">
             @for (p of expiring(); track p.id) {
-              <app-product-card [product]="p" (remove)="remove($event)" />
+              <app-product-card [product]="p" (edit)="startEdit($event)" (remove)="remove($event)" />
             }
           </ul>
         }
 
-        <!-- All products -->
+        <!-- All products, with category filter -->
         @if (products().length) {
-          <h3 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">
-            In the pantry ({{ products().length }})
-          </h3>
-          <ul class="space-y-2">
-            @for (p of products(); track p.id) {
-              <app-product-card [product]="p" (remove)="remove($event)" />
+          <div class="mb-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              (click)="filter.set('ALL')"
+              [class]="chipClass('ALL')"
+            >
+              All
+            </button>
+            @for (cat of categories; track cat.value) {
+              <button type="button" (click)="filter.set(cat.value)" [class]="chipClass(cat.value)">
+                {{ cat.label }}
+              </button>
             }
-          </ul>
+          </div>
+
+          <h3 class="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-400">
+            In the pantry ({{ filtered().length }})
+          </h3>
+          @if (filtered().length) {
+            <ul class="space-y-2">
+              @for (p of filtered(); track p.id) {
+                <app-product-card [product]="p" (edit)="startEdit($event)" (remove)="remove($event)" />
+              }
+            </ul>
+          } @else {
+            <p class="py-8 text-center text-slate-400">No products in this category.</p>
+          }
         } @else {
           <p class="py-8 text-center text-slate-400">The pantry is empty. Add your first product! 📦</p>
         }
@@ -130,7 +166,9 @@ export class PantryComponent implements OnInit {
   private readonly service = inject(ProductService);
 
   protected readonly categories = CATEGORIES;
-  protected newProduct: NewProduct = emptyForm();
+  protected form: ProductForm = emptyForm();
+  protected readonly editingId = signal<number | null>(null);
+  protected readonly filter = signal<CategoryFilter>('ALL');
 
   protected readonly products = signal<Product[]>([]);
   protected readonly loading = signal(true);
@@ -144,6 +182,12 @@ export class PantryComponent implements OnInit {
     return this.products()
       .filter((p) => p.expiryDate && new Date(p.expiryDate + 'T00:00:00') <= limit)
       .sort((a, b) => (a.expiryDate! < b.expiryDate! ? -1 : 1));
+  });
+
+  /** The full list filtered by the selected category. */
+  protected readonly filtered = computed(() => {
+    const f = this.filter();
+    return f === 'ALL' ? this.products() : this.products().filter((p) => p.category === f);
   });
 
   ngOnInit(): void {
@@ -164,28 +208,64 @@ export class PantryComponent implements OnInit {
     });
   }
 
-  protected add(): void {
-    const name = this.newProduct.name.trim();
+  protected chipClass(value: CategoryFilter): string {
+    const base = 'rounded-full px-3 py-1 text-sm font-medium transition-colors ';
+    return this.filter() === value
+      ? base + 'bg-emerald-600 text-white'
+      : base + 'border border-slate-300 text-slate-600 hover:bg-slate-100';
+  }
+
+  protected startEdit(product: Product): void {
+    this.editingId.set(product.id ?? null);
+    this.form = {
+      name: product.name,
+      quantity: product.quantity ?? null,
+      unit: product.unit ?? '',
+      category: product.category,
+      expiryDate: product.expiryDate ?? '',
+    };
+  }
+
+  protected cancelEdit(): void {
+    this.editingId.set(null);
+    this.form = emptyForm();
+  }
+
+  protected submit(): void {
+    const name = this.form.name.trim();
     if (!name) return;
     this.error.set(null);
-    const product: Product = {
+    const payload: Product = {
       name,
-      quantity: this.newProduct.quantity ?? null,
-      unit: this.newProduct.unit.trim() || null,
-      category: this.newProduct.category,
-      expiryDate: this.newProduct.expiryDate || null,
+      quantity: this.form.quantity ?? null,
+      unit: this.form.unit.trim() || null,
+      category: this.form.category,
+      expiryDate: this.form.expiryDate || null,
     };
-    this.service.add(product).subscribe({
-      next: (saved) => {
-        this.products.update((p) => [...p, saved]);
-        this.newProduct = emptyForm();
-      },
-      error: () => this.error.set('Could not add the product. Please try again.'),
-    });
+
+    const id = this.editingId();
+    if (id !== null) {
+      this.service.update(id, payload).subscribe({
+        next: (saved) => {
+          this.products.update((p) => p.map((x) => (x.id === saved.id ? saved : x)));
+          this.cancelEdit();
+        },
+        error: () => this.error.set('Could not save changes. Please try again.'),
+      });
+    } else {
+      this.service.add(payload).subscribe({
+        next: (saved) => {
+          this.products.update((p) => [...p, saved]);
+          this.form = emptyForm();
+        },
+        error: () => this.error.set('Could not add the product. Please try again.'),
+      });
+    }
   }
 
   protected remove(product: Product): void {
     if (product.id == null) return;
+    if (this.editingId() === product.id) this.cancelEdit();
     this.service.remove(product.id).subscribe({
       next: () => this.products.update((p) => p.filter((x) => x.id !== product.id)),
       error: () => this.error.set('Could not remove the product. Please try again.'),

@@ -1,6 +1,7 @@
 import { Component, computed, input, output } from '@angular/core';
 
 import { CATEGORIES, Product } from '../../models/product.model';
+import { daysToExpiry, expiryColorClass, expiryLabel } from '../../models/expiry.util';
 
 /**
  * Card for a pantry product, with expiry highlighting
@@ -25,19 +26,30 @@ import { CATEGORIES, Product } from '../../models/product.model';
         }
       </div>
 
-      <button
-        type="button"
-        class="shrink-0 rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-        (click)="remove.emit(product())"
-        [attr.aria-label]="'Remove ' + product().name"
-      >
-        🗑️
-      </button>
+      <div class="flex shrink-0 gap-1">
+        <button
+          type="button"
+          class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+          (click)="edit.emit(product())"
+          [attr.aria-label]="'Edit ' + product().name"
+        >
+          ✏️
+        </button>
+        <button
+          type="button"
+          class="rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+          (click)="remove.emit(product())"
+          [attr.aria-label]="'Remove ' + product().name"
+        >
+          🗑️
+        </button>
+      </div>
     </li>
   `,
 })
 export class ProductCardComponent {
   readonly product = input.required<Product>();
+  readonly edit = output<Product>();
   readonly remove = output<Product>();
 
   private readonly icons: Record<string, string> = {
@@ -54,35 +66,13 @@ export class ProductCardComponent {
     () => CATEGORIES.find((c) => c.value === this.product().category)?.label ?? 'Other',
   );
 
-  /** Days left until expiry (negative = already expired), null if not set. */
-  private readonly daysToExpiry = computed<number | null>(() => {
-    const date = this.product().expiryDate;
-    if (!date) return null;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const expiry = new Date(date + 'T00:00:00');
-    return Math.round((expiry.getTime() - today.getTime()) / 86_400_000);
-  });
+  private readonly days = computed(() => daysToExpiry(this.product().expiryDate));
 
-  readonly expiryText = computed(() => {
-    const d = this.daysToExpiry();
-    if (d === null) return null;
-    if (d < 0) return `Expired ${-d} ${-d === 1 ? 'day' : 'days'} ago`;
-    if (d === 0) return 'Expires today';
-    if (d === 1) return 'Expires tomorrow';
-    return `Expires in ${d} days`;
-  });
-
-  readonly expiryColor = computed(() => {
-    const d = this.daysToExpiry();
-    if (d === null) return '';
-    if (d < 0) return 'text-red-600';
-    if (d <= 3) return 'text-amber-600';
-    return 'text-slate-500';
-  });
+  readonly expiryText = computed(() => expiryLabel(this.days()));
+  readonly expiryColor = computed(() => expiryColorClass(this.days()));
 
   readonly border = computed(() => {
-    const d = this.daysToExpiry();
+    const d = this.days();
     if (d === null) return 'border-slate-200';
     if (d < 0) return 'border-red-300';
     if (d <= 3) return 'border-amber-300';
