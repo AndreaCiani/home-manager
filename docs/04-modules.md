@@ -138,13 +138,36 @@ POST   /api/deadlines/{id}/pay     mark paid (recurring → next occurrence)
 
 ---
 
+## ✅ Module 4 — Household Chores
+
+Who does what at home: chores optionally assigned to a family member, with an
+optional due date and recurrence. Marking a recurring chore done **rolls it
+forward** to its next occurrence; a one-off is simply completed.
+
+### Data model
+
+**Chore** — id, title, assignee (member id + name, denormalized so member
+removal stays simple), dueDate (optional), recurrence (NONE/DAILY/WEEKLY/MONTHLY),
+done, family (scoped per household), createdAt.
+
+### Endpoints
+
+```
+GET    /api/chores            all chores (open first)
+POST   /api/chores            add
+PUT    /api/chores/{id}       edit
+DELETE /api/chores/{id}       remove
+POST   /api/chores/{id}/done  mark done (recurring → next occurrence)
+```
+
+---
+
 ## 🔜 Future modules (roadmap)
 
 Ideas, not commitments. The order will be decided based on real usefulness.
 
 | Module | What it does |
 |---|---|
-| 🧹 **Household chores** | Who does what, rotations, recurrences |
 | 💰 **Household budget** | Family expenses, trends, categories |
 | 📄 **Documents & Maintenance** | Archive of household documents, maintenance deadlines |
 

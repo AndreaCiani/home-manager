@@ -5,9 +5,11 @@ import { forkJoin } from 'rxjs';
 import { Product } from '../../models/product.model';
 import { ShoppingItem } from '../../models/shopping-item.model';
 import { Deadline, daysUntilDue, dueColorClass, dueLabel } from '../../models/deadline.model';
+import { Chore } from '../../models/chore.model';
 import { ProductService } from '../../services/product.service';
 import { ShoppingItemService } from '../../services/shopping-item.service';
 import { DeadlineService } from '../../services/deadline.service';
+import { ChoreService } from '../../services/chore.service';
 import { daysToExpiry, expiryColorClass, expiryLabel } from '../../models/expiry.util';
 
 /** Threshold (days) within which a product is considered "expiring". */
@@ -51,6 +53,11 @@ const PREVIEW = 5;
           <p class="text-xs" [class]="dueSoon().length ? 'text-amber-600' : 'text-slate-500'">
             {{ loading() ? '…' : dueSoon().length + ' due soon' }}
           </p>
+        </a>
+        <a routerLink="/chores" class="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-emerald-300">
+          <p class="text-2xl" aria-hidden="true">🧹</p>
+          <p class="mt-1 font-semibold text-slate-800">Chores</p>
+          <p class="text-xs text-slate-500">{{ loading() ? '…' : choresToDo() + ' to do' }}</p>
         </a>
       </div>
 
@@ -133,14 +140,18 @@ export class DashboardComponent implements OnInit {
   private readonly productService = inject(ProductService);
   private readonly shoppingService = inject(ShoppingItemService);
   private readonly deadlineService = inject(DeadlineService);
+  private readonly choreService = inject(ChoreService);
 
   protected readonly PREVIEW = PREVIEW;
 
   protected readonly products = signal<Product[]>([]);
   protected readonly items = signal<ShoppingItem[]>([]);
   protected readonly dueSoon = signal<Deadline[]>([]);
+  protected readonly chores = signal<Chore[]>([]);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
+
+  protected readonly choresToDo = computed(() => this.chores().filter((c) => !c.done).length);
 
   protected readonly dueSoonPreview = computed(() => this.dueSoon().slice(0, PREVIEW));
 
@@ -164,11 +175,13 @@ export class DashboardComponent implements OnInit {
       products: this.productService.list(),
       items: this.shoppingService.list(),
       deadlines: this.deadlineService.upcoming(),
+      chores: this.choreService.list(),
     }).subscribe({
-      next: ({ products, items, deadlines }) => {
+      next: ({ products, items, deadlines, chores }) => {
         this.products.set(products);
         this.items.set(items);
         this.dueSoon.set(deadlines);
+        this.chores.set(chores);
         this.loading.set(false);
       },
       error: () => {

@@ -45,6 +45,12 @@ export const routes: Routes = [
       import('./pages/deadlines/deadlines.component').then((m) => m.DeadlinesComponent),
   },
   {
+    path: 'chores',
+    canActivate: [authGuard],
+    title: 'Chores · home-manager',
+    loadComponent: () => import('./pages/chores/chores.component').then((m) => m.ChoresComponent),
+  },
+  {
     path: 'family',
     canActivate: [authGuard],
     title: 'Family · home-manager',
