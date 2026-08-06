@@ -56,6 +56,14 @@ Alternative considered and discarded: letting Spring Boot serve everything (a si
 
 In development you can work comfortably with hot reload; Docker Compose is mainly for the "release" version and for having the database ready without installing it.
 
+Three commands, one per mode:
+
+| Mode | Command | What runs |
+|---|---|---|
+| Development (hot reload) | `./scripts/dev.sh` | db + backend in Docker, `ng serve` on the host |
+| Full local stack (built) | `docker compose up -d --build` | all three services in Docker (Nginx) |
+| Production | `docker compose -f docker-compose.prod.yml up -d --build` | built stack behind a Cloudflare Tunnel |
+
 ## Flow of a request (example)
 
 1. The user opens the shopping list → Angular calls `GET /api/shopping-items`.

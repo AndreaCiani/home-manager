@@ -4,7 +4,14 @@
 
 ## 🚀 Development (hot reload)
 
-From the `frontend/` folder:
+Easiest — from the repository root, start db + backend (Docker) and the dev
+server together:
+
+```bash
+./scripts/dev.sh
+```
+
+Or just the frontend, from this folder (start the backend yourself):
 
 ```bash
 npm install        # first time only

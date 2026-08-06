@@ -34,20 +34,34 @@ Details and rationale in [docs/02-architecture.md](docs/02-architecture.md) and 
 
 ---
 
-## 🚀 Quick start (locally)
+## 🚀 Running it
 
-> Requirements: **Docker** installed. No need to install Java, Node or Postgres by hand.
+Three modes, three commands. All serve the app at **http://localhost:4200**
+(API at `/api`).
+
+**🔁 Development (hot reload)** — db + backend in Docker, Angular dev server on the host:
 
 ```bash
-docker compose up
+./scripts/dev.sh
 ```
 
-Then open the browser at:
+> Requires **Node** on the host (for `ng serve`). Ctrl+C stops the dev server; the db+backend keep running (`docker compose stop` to stop them).
 
-- App (frontend): http://localhost:4200
-- API (backend): http://localhost:8080/api
+**📦 Full local stack (built images, production-like)** — everything in Docker, served by Nginx:
 
-For development with frontend hot reload, see [docs/02-architecture.md](docs/02-architecture.md#development-vs-production-mode).
+```bash
+docker compose up -d --build
+```
+
+> Requires only **Docker**. This is the closest local match to production.
+
+**🌐 Production (Cloudflare Tunnel)** — see the [go-live runbook](docs/05-deployment.md#-go-live-runbook-cloudflare-tunnel):
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+More on the dev-vs-release setup in [docs/02-architecture.md](docs/02-architecture.md#development-vs-production-mode).
 
 ---
 
