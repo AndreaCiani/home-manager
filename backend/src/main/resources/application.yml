@@ -28,9 +28,13 @@ spring:
       max-file-size: 10MB
       max-request-size: 12MB
 
-# Where uploaded document files are stored (a Docker volume in production).
 app:
+  registration:
+    # false = invite-only (no new households from the public URL; the first
+    # account still bootstraps). Set REGISTRATION_OPEN=false in production.
+    open: ${REGISTRATION_OPEN:true}
   storage:
+    # Where uploaded document files are stored (a Docker volume in production).
     dir: ${APP_STORAGE_DIR:/data/documents}
 
 server:
