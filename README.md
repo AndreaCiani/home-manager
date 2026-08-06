@@ -76,10 +76,12 @@ home-manager/
 
 ## 🗺️ Project status
 
-🏗️ **Current phase:** Modules 1 and 2 in place; hardening for going online next.
+🏗️ **Current phase:** Modules 1–3 in place and tested; hardening for going online next.
 
-- ☕ **Backend**: REST API for the shopping list and pantry (CRUD + expiring products), plus **authentication & families** (Spring Security, session cookies, BCrypt, CSRF).
-- 🅰️ **Frontend**: Angular 19 + Tailwind (PWA) with Home, 🛒 Shopping list, 📦 Pantry, and account/family screens (login, registration, member management). See [frontend/README.md](frontend/README.md).
+- ☕ **Backend**: REST API for the shopping list, pantry (with expiry) and **deadlines & bills** (with recurrence), plus **authentication & families** (Spring Security, session cookies, BCrypt, CSRF). Covered by integration tests.
+- 🅰️ **Frontend**: Angular 19 + Tailwind (PWA) with Home, 🛒 Shopping list, 📦 Pantry, 📅 Deadlines & Bills, and account/family screens. End-to-end tested with Playwright ([e2e/](e2e/)).
 - 🔑 **Accounts & families**: invite-based registration; each household's data is private to its members; admins manage members and the invite code.
 
-Next steps: prepare for **going online** ([deployment](docs/05-deployment.md)) — HTTPS via Cloudflare, database backups — and keep refining the modules.
+Modules delivered: **1 — Shopping & Pantry**, **2 — Users & Family**, **3 — Deadlines & Bills** (see [docs/04-modules.md](docs/04-modules.md)).
+
+Next steps: prepare for **going online** ([deployment](docs/05-deployment.md)) — HTTPS via Cloudflare, database backups — and continue the roadmap.

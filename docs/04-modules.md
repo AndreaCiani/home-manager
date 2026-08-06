@@ -105,15 +105,47 @@ DELETE /api/family/members/{id}             remove a member (admin)
 
 ---
 
+## ✅ Module 3 — Deadlines & Bills
+
+Reminders for recurring and one-off obligations — car tax, insurance, utility
+bills, inspections — so nothing slips. Overdue and soon-due items are surfaced
+on the dashboard and highlighted in the list.
+
+### Features
+
+1. **Deadlines/bills** with a title, optional amount, due date, category
+   (bill, tax, insurance, subscription, inspection, other) and notes.
+2. **Due-soon & overdue highlighting** — colour-coded by urgency, with an
+   "⏰ Due soon" section and a dashboard stat/preview.
+3. **Recurrence** — one-off, monthly or yearly. Marking a recurring deadline as
+   paid **rolls it forward** to the next occurrence; a one-off is simply marked paid.
+
+### Data model
+
+**Deadline** — id, title, amount (optional), dueDate, category, recurrence
+(NONE/MONTHLY/YEARLY), paid, notes, family (scoped per household), createdAt.
+
+### Endpoints
+
+```
+GET    /api/deadlines              all deadlines (soonest first)
+GET    /api/deadlines/upcoming     unpaid, due within N days (incl. overdue)
+POST   /api/deadlines              add
+PUT    /api/deadlines/{id}         edit
+DELETE /api/deadlines/{id}         remove
+POST   /api/deadlines/{id}/pay     mark paid (recurring → next occurrence)
+```
+
+---
+
 ## 🔜 Future modules (roadmap)
 
 Ideas, not commitments. The order will be decided based on real usefulness.
 
 | Module | What it does |
 |---|---|
-| 📅 **Deadlines & Bills** | Reminders for car tax, insurance, bills, inspections… |
 | 🧹 **Household chores** | Who does what, rotations, recurrences |
 | 💰 **Household budget** | Family expenses, trends, categories |
 | 📄 **Documents & Maintenance** | Archive of household documents, maintenance deadlines |
 
-> Note: **Users & Family** (above) is already in place — it's the cross-cutting module that protects access before going online. See [05-deployment.md](05-deployment.md).
+> Note: **Users & Family** is already in place — it's the cross-cutting module that protects access before going online. See [05-deployment.md](05-deployment.md).

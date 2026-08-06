@@ -78,6 +78,16 @@ import { AuthService } from './services/auth.service';
               <span class="text-xl" aria-hidden="true">📦</span>
               Pantry
             </a>
+            <a
+              routerLink="/deadlines"
+              routerLinkActive="text-emerald-600"
+              #deadlines="routerLinkActive"
+              class="flex flex-1 flex-col items-center gap-1 py-3 text-sm text-slate-500 transition-colors"
+              [attr.aria-current]="deadlines.isActive ? 'page' : null"
+            >
+              <span class="text-xl" aria-hidden="true">📅</span>
+              Bills
+            </a>
           </div>
         </nav>
       </div>

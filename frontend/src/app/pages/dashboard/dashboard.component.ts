@@ -4,8 +4,10 @@ import { forkJoin } from 'rxjs';
 
 import { Product } from '../../models/product.model';
 import { ShoppingItem } from '../../models/shopping-item.model';
+import { Deadline, daysUntilDue, dueColorClass, dueLabel } from '../../models/deadline.model';
 import { ProductService } from '../../services/product.service';
 import { ShoppingItemService } from '../../services/shopping-item.service';
+import { DeadlineService } from '../../services/deadline.service';
 import { daysToExpiry, expiryColorClass, expiryLabel } from '../../models/expiry.util';
 
 /** Threshold (days) within which a product is considered "expiring". */
@@ -33,7 +35,7 @@ const PREVIEW = 5;
         <p class="py-8 text-center text-slate-400">Loading…</p>
       } @else {
         <!-- Stat cards -->
-        <div class="mb-6 grid grid-cols-3 gap-3">
+        <div class="mb-6 grid grid-cols-2 gap-3">
           <a
             routerLink="/shopping"
             class="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-emerald-300"
@@ -49,6 +51,15 @@ const PREVIEW = 5;
               {{ expiringCount() }}
             </p>
             <p class="mt-1 text-xs text-slate-500">⏰ Expiring</p>
+          </a>
+          <a
+            routerLink="/deadlines"
+            class="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-amber-300"
+          >
+            <p class="text-2xl font-bold" [class]="dueSoon().length ? 'text-amber-600' : 'text-slate-800'">
+              {{ dueSoon().length }}
+            </p>
+            <p class="mt-1 text-xs text-slate-500">📅 Due soon</p>
           </a>
           <a
             routerLink="/pantry"
@@ -78,6 +89,29 @@ const PREVIEW = 5;
             </ul>
             @if (expiring().length > PREVIEW) {
               <p class="mt-2 text-xs text-slate-400">+ {{ expiring().length - PREVIEW }} more</p>
+            }
+          </div>
+        }
+
+        <!-- Upcoming bills -->
+        @if (dueSoon().length) {
+          <div class="mb-6">
+            <div class="mb-2 flex items-center justify-between">
+              <h3 class="text-sm font-semibold uppercase tracking-wide text-amber-600">📅 Upcoming bills</h3>
+              <a routerLink="/deadlines" class="text-xs font-medium text-emerald-600 hover:underline">
+                View all →
+              </a>
+            </div>
+            <ul class="space-y-2">
+              @for (d of dueSoonPreview(); track d.id) {
+                <li class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2.5">
+                  <span class="truncate font-medium">{{ d.title }}</span>
+                  <span class="ml-3 shrink-0 text-xs font-medium" [class]="dueColorFor(d)">{{ dueLabelFor(d) }}</span>
+                </li>
+              }
+            </ul>
+            @if (dueSoon().length > PREVIEW) {
+              <p class="mt-2 text-xs text-slate-400">+ {{ dueSoon().length - PREVIEW }} more</p>
             }
           </div>
         }
@@ -117,13 +151,17 @@ const PREVIEW = 5;
 export class DashboardComponent implements OnInit {
   private readonly productService = inject(ProductService);
   private readonly shoppingService = inject(ShoppingItemService);
+  private readonly deadlineService = inject(DeadlineService);
 
   protected readonly PREVIEW = PREVIEW;
 
   protected readonly products = signal<Product[]>([]);
   protected readonly items = signal<ShoppingItem[]>([]);
+  protected readonly dueSoon = signal<Deadline[]>([]);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
+
+  protected readonly dueSoonPreview = computed(() => this.dueSoon().slice(0, PREVIEW));
 
   protected readonly toBuy = computed(() => this.items().filter((i) => !i.purchased));
   protected readonly toBuyCount = computed(() => this.toBuy().length);
@@ -144,10 +182,12 @@ export class DashboardComponent implements OnInit {
     forkJoin({
       products: this.productService.list(),
       items: this.shoppingService.list(),
+      deadlines: this.deadlineService.upcoming(),
     }).subscribe({
-      next: ({ products, items }) => {
+      next: ({ products, items, deadlines }) => {
         this.products.set(products);
         this.items.set(items);
+        this.dueSoon.set(deadlines);
         this.loading.set(false);
       },
       error: () => {
@@ -164,4 +204,13 @@ export class DashboardComponent implements OnInit {
   protected colorFor(p: Product): string {
     return expiryColorClass(daysToExpiry(p.expiryDate));
   }
+
+  protected dueLabelFor(d: Deadline): string {
+    return dueLabel(daysUntilDue(d.dueDate)) ?? '';
+  }
+
+  protected dueColorFor(d: Deadline): string {
+    return dueColorClass(daysUntilDue(d.dueDate));
+  }
 }
+

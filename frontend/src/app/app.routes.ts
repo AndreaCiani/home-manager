@@ -38,6 +38,13 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/pantry/pantry.component').then((m) => m.PantryComponent),
   },
   {
+    path: 'deadlines',
+    canActivate: [authGuard],
+    title: 'Deadlines & Bills · home-manager',
+    loadComponent: () =>
+      import('./pages/deadlines/deadlines.component').then((m) => m.DeadlinesComponent),
+  },
+  {
     path: 'family',
     canActivate: [authGuard],
     title: 'Family · home-manager',
