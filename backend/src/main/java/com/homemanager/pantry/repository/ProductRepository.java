@@ -7,10 +7,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Access to pantry products. Spring generates the implementation.
+ * Access to pantry products, scoped to a family. Spring generates the implementation.
  */
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    /** Products expiring on or before a given date, ordered by expiry. */
-    List<Product> findByExpiryDateLessThanEqualOrderByExpiryDateAsc(LocalDate limit);
+    /** All products of a family. */
+    List<Product> findByFamilyId(Long familyId);
+
+    /** Products of a family expiring on or before a given date, ordered by expiry. */
+    List<Product> findByFamilyIdAndExpiryDateLessThanEqualOrderByExpiryDateAsc(Long familyId, LocalDate limit);
 }

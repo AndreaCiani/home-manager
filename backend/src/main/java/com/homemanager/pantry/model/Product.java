@@ -1,5 +1,7 @@
 package com.homemanager.pantry.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.homemanager.family.model.Family;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
@@ -34,6 +36,11 @@ public class Product {
     /** Expiry date (optional): the basis for waste-reducing alerts. */
     private LocalDate expiryDate;
 
+    /** The family this product belongs to (data is scoped per household). */
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "family_id", nullable = false)
+    private Family family;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
@@ -56,6 +63,10 @@ public class Product {
 
     public LocalDate getExpiryDate() { return expiryDate; }
     public void setExpiryDate(LocalDate expiryDate) { this.expiryDate = expiryDate; }
+
+    @JsonIgnore
+    public Family getFamily() { return family; }
+    public void setFamily(Family family) { this.family = family; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

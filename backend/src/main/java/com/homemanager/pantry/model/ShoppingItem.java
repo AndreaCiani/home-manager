@@ -1,5 +1,7 @@
 package com.homemanager.pantry.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.homemanager.family.model.Family;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
@@ -27,8 +29,13 @@ public class ShoppingItem {
     @Column(nullable = false)
     private boolean purchased = false;
 
-    /** Who added it (temporary, pending the Users & Family module). */
+    /** Display name of the member who added it (set from the logged-in user). */
     private String addedBy;
+
+    /** The family this item belongs to (data is scoped per household). */
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "family_id", nullable = false)
+    private Family family;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
@@ -49,6 +56,10 @@ public class ShoppingItem {
 
     public String getAddedBy() { return addedBy; }
     public void setAddedBy(String addedBy) { this.addedBy = addedBy; }
+
+    @JsonIgnore
+    public Family getFamily() { return family; }
+    public void setFamily(Family family) { this.family = family; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

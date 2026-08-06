@@ -6,10 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 /**
- * Access to shopping list items. Spring generates the implementation.
+ * Access to shopping list items, scoped to a family. Spring generates the implementation.
  */
 public interface ShoppingItemRepository extends JpaRepository<ShoppingItem, Long> {
 
-    /** Items ordered: still-to-buy first, then by creation time. */
-    List<ShoppingItem> findAllByOrderByPurchasedAscCreatedAtAsc();
+    /** Items of a family ordered: still-to-buy first, then by creation time. */
+    List<ShoppingItem> findByFamilyIdOrderByPurchasedAscCreatedAtAsc(Long familyId);
 }

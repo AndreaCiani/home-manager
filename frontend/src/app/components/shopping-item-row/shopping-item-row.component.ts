@@ -49,8 +49,12 @@ import { ShoppingItem } from '../../models/shopping-item.model';
       } @else {
         <div class="min-w-0 flex-1" [class.opacity-50]="item().purchased">
           <p class="truncate font-medium" [class.line-through]="item().purchased">{{ item().name }}</p>
-          @if (item().quantity) {
-            <p class="text-xs text-slate-500">Quantity: {{ item().quantity }}</p>
+          @if (item().quantity || item().addedBy) {
+            <p class="truncate text-xs text-slate-500">
+              @if (item().quantity) {<span>Qty: {{ item().quantity }}</span>}
+              @if (item().quantity && item().addedBy) {<span> · </span>}
+              @if (item().addedBy) {<span>added by {{ item().addedBy }}</span>}
+            </p>
           }
         </div>
 
