@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -67,9 +68,21 @@ public class DocumentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Unsupported file type (allowed: PDF, PNG, JPEG, WEBP)");
         }
+        byte[] content;
+        try {
+            content = file.getBytes();
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not read the file");
+        }
+        // Defence in depth: the client's content-type is spoofable, so also
+        // check the file's magic bytes match one of the allowed formats.
+        if (!hasAllowedSignature(content)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "The file content does not match an allowed type");
+        }
 
         User me = currentUser.require();
-        String stored = storage.store(me.getFamily().getId(), file);
+        String stored = storage.store(me.getFamily().getId(), content);
 
         Document doc = new Document();
         doc.setName(name.trim());
@@ -78,7 +91,7 @@ public class DocumentController {
         doc.setNotes(notes != null && !notes.isBlank() ? notes.trim() : null);
         doc.setOriginalFilename(file.getOriginalFilename());
         doc.setContentType(file.getContentType());
-        doc.setSizeBytes(file.getSize());
+        doc.setSizeBytes(content.length);
         doc.setStoredFilename(stored);
         doc.setFamily(me.getFamily());
         return repository.save(doc);
@@ -123,6 +136,29 @@ public class DocumentController {
         storage.delete(doc.getFamily().getId(), doc.getStoredFilename());
         repository.delete(doc);
         return ResponseEntity.noContent().build();
+    }
+
+    /** True if the bytes start with a PDF/PNG/JPEG/WEBP signature. */
+    private static boolean hasAllowedSignature(byte[] b) {
+        return startsWith(b, 0x25, 0x50, 0x44, 0x46)                       // %PDF
+                || startsWith(b, 0x89, 0x50, 0x4E, 0x47)                   // PNG
+                || startsWith(b, 0xFF, 0xD8, 0xFF)                         // JPEG
+                || (startsWith(b, 0x52, 0x49, 0x46, 0x46)                  // RIFF....WEBP
+                    && b.length >= 12
+                    && (b[8] & 0xFF) == 0x57 && (b[9] & 0xFF) == 0x45
+                    && (b[10] & 0xFF) == 0x42 && (b[11] & 0xFF) == 0x50);
+    }
+
+    private static boolean startsWith(byte[] b, int... signature) {
+        if (b.length < signature.length) {
+            return false;
+        }
+        for (int i = 0; i < signature.length; i++) {
+            if ((b[i] & 0xFF) != signature[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private DocumentCategory parseCategory(String category) {

@@ -129,3 +129,19 @@ This document records **all the choices** made during the ideation phase, along 
 **Decision:** two roles. **ADMIN** manages the family (invite code, promote/demote members, remove members); **MEMBER** uses the shared data. A family must always keep **at least one admin**, and a user cannot remove themselves.
 
 **Why:** a small, understandable permission model that fits a household. Finer-grained permissions can come later if a real need appears.
+
+---
+
+## D15 — Database schema: Flyway migrations
+
+**Decision:** the schema is owned by **Flyway** migrations; JPA runs with `ddl-auto: validate` (it checks the mapping against the schema but never changes it). The initial schema is captured as a baseline migration (`V1__baseline.sql`).
+
+**Why:** `ddl-auto: update` is convenient early on but unsafe once there is real family data — it can alter tables implicitly and offers no history or rollback. Versioned migrations make schema changes explicit, reviewable and reproducible across environments. `baseline-on-migrate` lets an existing (Hibernate-created) database adopt Flyway without re-running the baseline.
+
+---
+
+## D16 — Tests & CI
+
+**Decision:** integration tests (Spring Boot + MockMvc, in-memory H2) cover auth, per-family scoping and every module; **Playwright** end-to-end tests drive the running app; **GitHub Actions** runs all of it on push.
+
+**Why:** the app is the family's real data behind a login going online — a safety net that runs automatically protects against regressions as modules and refactors accumulate.

@@ -11,12 +11,17 @@ spring:
 
   jpa:
     hibernate:
-      # "update" is fine in development. In production consider migrations (Flyway).
-      ddl-auto: update
+      # The schema is managed by Flyway; Hibernate only validates against it.
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
     open-in-view: false
+
+  flyway:
+    # Adopt an existing Hibernate-created schema without re-running the baseline.
+    baseline-on-migrate: true
+    baseline-version: 1
 
   servlet:
     multipart:
@@ -30,11 +35,16 @@ app:
 
 server:
   port: 8080
+  # Behind Nginx/Cloudflare, trust X-Forwarded-* so the app knows it's on HTTPS.
+  forward-headers-strategy: framework
   servlet:
     session:
       cookie:
         http-only: true
         same-site: lax
+        # Set COOKIE_SECURE=true in production (HTTPS) so the session cookie
+        # is never sent over plain HTTP. Left false for local http development.
+        secure: ${COOKIE_SECURE:false}
 
 # Common prefix for all APIs
 # (controllers already use /api/... so this is only indicative)

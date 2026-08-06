@@ -26,8 +26,14 @@ Tools that make this much easier: **Caddy** (automatic HTTPS) or directly **Clou
 ### 2. 🛡️ Security
 - Expose **only** the proxy port (443). **Never** expose PostgreSQL or the Spring Boot port directly.
 - ✅ **Login is in place** (Users & Family module): session cookies, BCrypt, CSRF, and per-family data isolation.
+- 🔒 **Set `COOKIE_SECURE=true`** on the backend once you're on HTTPS, so the session cookie is never sent over plain HTTP. (It defaults to `false` for local http development.)
 - ⚠️ **Registration is currently open** — anyone who reaches the app can create a household. Before exposing it publicly, decide whether to restrict sign-up (e.g. invite-only, an allow-list, or an extra network gate in front of Cloudflare).
 - Change the default database password (`.env`) and keep the containers up to date.
+
+> **Schema changes:** the database schema is managed by **Flyway migrations**
+> (`backend/src/main/resources/db/migration`), and JPA only *validates* against
+> it — it never alters it on its own. To change the schema, add a new
+> `V2__…​.sql` (etc.) migration rather than relying on Hibernate auto-DDL.
 
 ### 3. 📡 ISP check
 Check that the provider doesn't block ports **80/443 inbound** (some do, even with a static IP). With Cloudflare Tunnel (below) the problem is bypassed entirely.

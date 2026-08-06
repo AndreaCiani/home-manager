@@ -11,6 +11,8 @@ RUN mvn -q clean package -DskipTests
 # --- Stage 2: lightweight runtime image ---
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
+# curl is used by the container healthcheck.
+RUN apk add --no-cache curl
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

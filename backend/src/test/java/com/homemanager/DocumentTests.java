@@ -18,8 +18,10 @@ class DocumentTests extends AbstractApiTest {
     @Autowired
     private DocumentRepository documents;
 
+    private static final byte[] PDF_BYTES = "%PDF-1.4\nhello world".getBytes();
+
     private MockMultipartFile pdf() {
-        return new MockMultipartFile("file", "passport.pdf", "application/pdf", "PDF-CONTENT".getBytes());
+        return new MockMultipartFile("file", "passport.pdf", "application/pdf", PDF_BYTES);
     }
 
     @Test
@@ -56,7 +58,7 @@ class DocumentTests extends AbstractApiTest {
 
         mvc.perform(get("/api/documents/" + id + "/file").with(user("anna@a.com")))
                 .andExpect(status().isOk())
-                .andExpect(content().bytes("PDF-CONTENT".getBytes()))
+                .andExpect(content().bytes(PDF_BYTES))
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("passport.pdf")));
     }
 
@@ -65,6 +67,18 @@ class DocumentTests extends AbstractApiTest {
         registerHousehold("anna@a.com", "Anna", "Casa A");
         MockMultipartFile txt = new MockMultipartFile("file", "note.txt", "text/plain", "hi".getBytes());
         mvc.perform(multipart("/api/documents").file(txt).param("name", "Note")
+                        .with(user("anna@a.com")).with(csrf()))
+                .andExpect(status().isBadRequest());
+        assertThat(documents.findAll()).isEmpty();
+    }
+
+    @Test
+    void rejectsFileWhoseBytesDoNotMatchDeclaredType() throws Exception {
+        registerHousehold("anna@a.com", "Anna", "Casa A");
+        // A .pdf content-type but the bytes are not a PDF
+        MockMultipartFile fake = new MockMultipartFile("file", "fake.pdf", "application/pdf",
+                "this is definitely not a pdf".getBytes());
+        mvc.perform(multipart("/api/documents").file(fake).param("name", "Fake")
                         .with(user("anna@a.com")).with(csrf()))
                 .andExpect(status().isBadRequest());
         assertThat(documents.findAll()).isEmpty();

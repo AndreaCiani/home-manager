@@ -84,4 +84,6 @@ home-manager/
 
 Modules delivered: **1 — Shopping & Pantry**, **2 — Users & Family**, **3 — Deadlines & Bills**, **4 — Household Chores**, **5 — Household Budget**, **6 — Documents & Maintenance** (see [docs/04-modules.md](docs/04-modules.md)).
 
+- 🧪 **Quality**: backend integration tests + Playwright E2E, run on every push by **GitHub Actions** ([.github/workflows/ci.yml](.github/workflows/ci.yml)). The database schema is managed by **Flyway** migrations (JPA only validates).
+
 Next steps: prepare for **going online** ([deployment](docs/05-deployment.md)) — HTTPS via Cloudflare, database backups — and continue the roadmap.

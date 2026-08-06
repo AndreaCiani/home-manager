@@ -9,6 +9,10 @@ spring:
     hibernate:
       ddl-auto: create-drop
 
+  # Tests use H2 with Hibernate-managed schema; Flyway (Postgres SQL) is off here.
+  flyway:
+    enabled: false
+
 # Uploaded files go under the build directory during tests.
 app:
   storage:

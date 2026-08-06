@@ -4,14 +4,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 /**
@@ -28,13 +26,13 @@ public class DocumentStorageService {
         this.baseDir = Paths.get(dir);
     }
 
-    /** Saves the file under the family's folder and returns its stored name. */
-    public String store(Long familyId, MultipartFile file) {
+    /** Saves the content under the family's folder and returns its stored name. */
+    public String store(Long familyId, byte[] content) {
         try {
             Path dir = baseDir.resolve(String.valueOf(familyId));
             Files.createDirectories(dir);
             String stored = UUID.randomUUID().toString();
-            Files.copy(file.getInputStream(), dir.resolve(stored), StandardCopyOption.REPLACE_EXISTING);
+            Files.write(dir.resolve(stored), content);
             return stored;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
