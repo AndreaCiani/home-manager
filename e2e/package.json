@@ -1,0 +1,13 @@
+{
+  "name": "home-manager-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "description": "End-to-end tests for home-manager (Playwright)",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}
