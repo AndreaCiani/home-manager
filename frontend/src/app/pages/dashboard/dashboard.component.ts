@@ -17,67 +17,52 @@ const EXPIRY_THRESHOLD = 7;
 const PREVIEW = 5;
 
 /**
- * 🏠 Home / dashboard: an at-a-glance overview of what needs attention —
- * items to buy and products about to expire — with links into each section.
+ * 🏠 Home hub: tiles for each module (the app is a container of modules) plus
+ * an at-a-glance list of what needs attention.
  */
 @Component({
   selector: 'app-dashboard',
   imports: [RouterLink],
   template: `
     <section>
-      <h2 class="mb-4 text-xl font-bold">🏠 Overview</h2>
+      <h2 class="mb-4 text-xl font-bold">🏠 Home</h2>
 
       @if (error()) {
         <p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{{ error() }}</p>
       }
 
+      <!-- Module hub -->
+      <div class="mb-6 grid grid-cols-2 gap-3">
+        <a routerLink="/shopping" class="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-emerald-300">
+          <p class="text-2xl" aria-hidden="true">🛒</p>
+          <p class="mt-1 font-semibold text-slate-800">Shopping</p>
+          <p class="text-xs text-slate-500">{{ loading() ? '…' : toBuyCount() + ' to buy' }}</p>
+        </a>
+        <a routerLink="/pantry" class="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-emerald-300">
+          <p class="text-2xl" aria-hidden="true">📦</p>
+          <p class="mt-1 font-semibold text-slate-800">Pantry</p>
+          <p class="text-xs" [class]="expiringCount() ? 'text-amber-600' : 'text-slate-500'">
+            {{ loading() ? '…' : expiringCount() ? expiringCount() + ' expiring' : products().length + ' items' }}
+          </p>
+        </a>
+        <a routerLink="/deadlines" class="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-emerald-300">
+          <p class="text-2xl" aria-hidden="true">📅</p>
+          <p class="mt-1 font-semibold text-slate-800">Bills</p>
+          <p class="text-xs" [class]="dueSoon().length ? 'text-amber-600' : 'text-slate-500'">
+            {{ loading() ? '…' : dueSoon().length + ' due soon' }}
+          </p>
+        </a>
+      </div>
+
       @if (loading()) {
         <p class="py-8 text-center text-slate-400">Loading…</p>
       } @else {
-        <!-- Stat cards -->
-        <div class="mb-6 grid grid-cols-2 gap-3">
-          <a
-            routerLink="/shopping"
-            class="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-emerald-300"
-          >
-            <p class="text-2xl font-bold text-emerald-600">{{ toBuyCount() }}</p>
-            <p class="mt-1 text-xs text-slate-500">🛒 To buy</p>
-          </a>
-          <a
-            routerLink="/pantry"
-            class="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-amber-300"
-          >
-            <p class="text-2xl font-bold" [class]="expiringCount() ? 'text-amber-600' : 'text-slate-800'">
-              {{ expiringCount() }}
-            </p>
-            <p class="mt-1 text-xs text-slate-500">⏰ Expiring</p>
-          </a>
-          <a
-            routerLink="/deadlines"
-            class="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-amber-300"
-          >
-            <p class="text-2xl font-bold" [class]="dueSoon().length ? 'text-amber-600' : 'text-slate-800'">
-              {{ dueSoon().length }}
-            </p>
-            <p class="mt-1 text-xs text-slate-500">📅 Due soon</p>
-          </a>
-          <a
-            routerLink="/pantry"
-            class="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-emerald-300"
-          >
-            <p class="text-2xl font-bold text-slate-800">{{ products().length }}</p>
-            <p class="mt-1 text-xs text-slate-500">📦 In pantry</p>
-          </a>
-        </div>
-
         <!-- Expiring soon -->
         @if (expiring().length) {
           <div class="mb-6">
             <div class="mb-2 flex items-center justify-between">
               <h3 class="text-sm font-semibold uppercase tracking-wide text-amber-600">⏰ Expiring soon</h3>
-              <a routerLink="/pantry" class="text-xs font-medium text-emerald-600 hover:underline">
-                View pantry →
-              </a>
+              <a routerLink="/pantry" class="text-xs font-medium text-emerald-600 hover:underline">View pantry →</a>
             </div>
             <ul class="space-y-2">
               @for (p of expiringPreview(); track p.id) {
@@ -98,9 +83,7 @@ const PREVIEW = 5;
           <div class="mb-6">
             <div class="mb-2 flex items-center justify-between">
               <h3 class="text-sm font-semibold uppercase tracking-wide text-amber-600">📅 Upcoming bills</h3>
-              <a routerLink="/deadlines" class="text-xs font-medium text-emerald-600 hover:underline">
-                View all →
-              </a>
+              <a routerLink="/deadlines" class="text-xs font-medium text-emerald-600 hover:underline">View all →</a>
             </div>
             <ul class="space-y-2">
               @for (d of dueSoonPreview(); track d.id) {
@@ -120,9 +103,7 @@ const PREVIEW = 5;
         <div>
           <div class="mb-2 flex items-center justify-between">
             <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-400">🛒 To buy</h3>
-            <a routerLink="/shopping" class="text-xs font-medium text-emerald-600 hover:underline">
-              View list →
-            </a>
+            <a routerLink="/shopping" class="text-xs font-medium text-emerald-600 hover:underline">View list →</a>
           </div>
           @if (toBuy().length) {
             <ul class="space-y-2">
@@ -213,4 +194,3 @@ export class DashboardComponent implements OnInit {
     return dueColorClass(daysUntilDue(d.dueDate));
   }
 }
-

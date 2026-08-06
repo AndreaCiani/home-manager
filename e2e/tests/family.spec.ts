@@ -7,7 +7,7 @@ test('an invited member joins, sees shared data, and can be promoted', async ({ 
   const admin = await adminCtx.newPage();
   await registerHousehold(admin, { name: 'Ada', familyName: 'Casa Shared' });
 
-  await admin.getByRole('link', { name: 'Shopping' }).click();
+  await admin.getByRole('link', { name: 'Shopping', exact: true }).click();
   await admin.getByPlaceholder('Add an item…').fill('SharedMilk');
   await admin.getByRole('button', { name: 'Add', exact: true }).click();
   await expect(admin.getByText('SharedMilk')).toBeVisible();
@@ -24,7 +24,7 @@ test('an invited member joins, sees shared data, and can be promoted', async ({ 
   await joinHousehold(member, { name: 'Ben', inviteCode });
 
   // The member sees the shared shopping item
-  await member.getByRole('link', { name: 'Shopping' }).click();
+  await member.getByRole('link', { name: 'Shopping', exact: true }).click();
   await expect(member.getByText('SharedMilk')).toBeVisible();
 
   // The admin now sees Ben and can promote him

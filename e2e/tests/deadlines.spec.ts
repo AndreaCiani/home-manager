@@ -4,7 +4,8 @@ import { registerHousehold } from './helpers';
 test('add a deadline, see it as due soon, and mark it paid', async ({ page }) => {
   await registerHousehold(page, { name: 'Dan', familyName: 'Casa Dan' });
 
-  await page.getByRole('link', { name: 'Bills', exact: true }).click();
+  // Bills is reached from the Home hub (not the bottom bar)
+  await page.getByRole('link', { name: /Bills/ }).click();
   await expect(page.getByRole('heading', { name: /Deadlines/ })).toBeVisible();
 
   const inThreeDays = new Date();

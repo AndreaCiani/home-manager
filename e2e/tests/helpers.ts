@@ -23,7 +23,7 @@ export async function registerHousehold(
   await page.getByRole('button', { name: 'New household' }).click();
   await page.getByPlaceholder('Household name (optional)').fill(opts.familyName);
   await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page.getByRole('heading', { name: '🏠 Overview' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '🏠 Home' })).toBeVisible();
   return { email, password: PASSWORD };
 }
 
@@ -40,6 +40,6 @@ export async function joinHousehold(
   // "Join a family" is the default mode; fill the invite code.
   await page.getByPlaceholder('Invite code').fill(opts.inviteCode);
   await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page.getByRole('heading', { name: '🏠 Overview' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '🏠 Home' })).toBeVisible();
   return { email, password: PASSWORD };
 }

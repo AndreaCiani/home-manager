@@ -9,7 +9,7 @@ test('unauthenticated visits are redirected to login', async ({ page }) => {
 
 test('registering a new household lands on the dashboard', async ({ page }) => {
   await registerHousehold(page, { name: 'Anna', familyName: 'Casa E2E' });
-  await expect(page.getByRole('heading', { name: '🏠 Overview' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '🏠 Home' })).toBeVisible();
   await expect(page.getByRole('link', { name: /Anna/ })).toBeVisible();
 });
 
@@ -23,7 +23,7 @@ test('logout then log back in', async ({ page }) => {
   await page.getByPlaceholder('Password').fill(password);
   await page.getByRole('button', { name: 'Sign in' }).click();
 
-  await expect(page.getByRole('heading', { name: '🏠 Overview' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '🏠 Home' })).toBeVisible();
 });
 
 test('wrong password shows an error', async ({ page }) => {

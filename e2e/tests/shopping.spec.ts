@@ -4,7 +4,7 @@ import { registerHousehold } from './helpers';
 test('add, tick and remove a shopping item', async ({ page }) => {
   await registerHousehold(page, { name: 'Sam', familyName: 'Casa Sam' });
 
-  await page.getByRole('link', { name: 'Shopping' }).click();
+  await page.getByRole('link', { name: 'Shopping', exact: true }).click();
   await expect(page.getByRole('heading', { name: '🛒 Shopping list' })).toBeVisible();
 
   await page.getByPlaceholder('Add an item…').fill('Milk');
