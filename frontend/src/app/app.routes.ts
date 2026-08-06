@@ -51,6 +51,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/chores/chores.component').then((m) => m.ChoresComponent),
   },
   {
+    path: 'budget',
+    canActivate: [authGuard],
+    title: 'Budget · home-manager',
+    loadComponent: () => import('./pages/budget/budget.component').then((m) => m.BudgetComponent),
+  },
+  {
     path: 'family',
     canActivate: [authGuard],
     title: 'Family · home-manager',

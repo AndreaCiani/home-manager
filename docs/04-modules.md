@@ -162,13 +162,35 @@ POST   /api/chores/{id}/done  mark done (recurring → next occurrence)
 
 ---
 
+## ✅ Module 5 — Household Budget
+
+Track household expenses and see where the money goes: this month's total
+with a per-category breakdown.
+
+### Data model
+
+**Expense** — id, description, amount, category (groceries, utilities, rent,
+transport, health, leisure, other), date, paidBy (denormalized member id +
+name), family (scoped per household), createdAt.
+
+### Endpoints
+
+```
+GET    /api/expenses            all expenses (most recent first)
+GET    /api/expenses/summary    monthly total + per-category breakdown (?month=yyyy-MM)
+POST   /api/expenses            add
+PUT    /api/expenses/{id}       edit
+DELETE /api/expenses/{id}       remove
+```
+
+---
+
 ## 🔜 Future modules (roadmap)
 
 Ideas, not commitments. The order will be decided based on real usefulness.
 
 | Module | What it does |
 |---|---|
-| 💰 **Household budget** | Family expenses, trends, categories |
 | 📄 **Documents & Maintenance** | Archive of household documents, maintenance deadlines |
 
 > Note: **Users & Family** is already in place — it's the cross-cutting module that protects access before going online. See [05-deployment.md](05-deployment.md).

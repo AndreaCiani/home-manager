@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
@@ -10,6 +11,7 @@ import { ProductService } from '../../services/product.service';
 import { ShoppingItemService } from '../../services/shopping-item.service';
 import { DeadlineService } from '../../services/deadline.service';
 import { ChoreService } from '../../services/chore.service';
+import { ExpenseService } from '../../services/expense.service';
 import { daysToExpiry, expiryColorClass, expiryLabel } from '../../models/expiry.util';
 
 /** Threshold (days) within which a product is considered "expiring". */
@@ -24,7 +26,7 @@ const PREVIEW = 5;
  */
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink],
+  imports: [RouterLink, CurrencyPipe],
   template: `
     <section>
       <h2 class="mb-4 text-xl font-bold">🏠 Home</h2>
@@ -58,6 +60,11 @@ const PREVIEW = 5;
           <p class="text-2xl" aria-hidden="true">🧹</p>
           <p class="mt-1 font-semibold text-slate-800">Chores</p>
           <p class="text-xs text-slate-500">{{ loading() ? '…' : choresToDo() + ' to do' }}</p>
+        </a>
+        <a routerLink="/budget" class="rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-emerald-300">
+          <p class="text-2xl" aria-hidden="true">💰</p>
+          <p class="mt-1 font-semibold text-slate-800">Budget</p>
+          <p class="text-xs text-slate-500">{{ loading() ? '…' : (budgetTotal() | currency: 'EUR') + ' this month' }}</p>
         </a>
       </div>
 
@@ -141,6 +148,7 @@ export class DashboardComponent implements OnInit {
   private readonly shoppingService = inject(ShoppingItemService);
   private readonly deadlineService = inject(DeadlineService);
   private readonly choreService = inject(ChoreService);
+  private readonly expenseService = inject(ExpenseService);
 
   protected readonly PREVIEW = PREVIEW;
 
@@ -148,6 +156,7 @@ export class DashboardComponent implements OnInit {
   protected readonly items = signal<ShoppingItem[]>([]);
   protected readonly dueSoon = signal<Deadline[]>([]);
   protected readonly chores = signal<Chore[]>([]);
+  protected readonly budgetTotal = signal(0);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
 
@@ -176,12 +185,14 @@ export class DashboardComponent implements OnInit {
       items: this.shoppingService.list(),
       deadlines: this.deadlineService.upcoming(),
       chores: this.choreService.list(),
+      budget: this.expenseService.summary(),
     }).subscribe({
-      next: ({ products, items, deadlines, chores }) => {
+      next: ({ products, items, deadlines, chores, budget }) => {
         this.products.set(products);
         this.items.set(items);
         this.dueSoon.set(deadlines);
         this.chores.set(chores);
+        this.budgetTotal.set(budget.total);
         this.loading.set(false);
       },
       error: () => {
