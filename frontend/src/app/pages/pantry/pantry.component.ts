@@ -7,7 +7,9 @@ import { CATEGORIES, Category, Product } from '../../models/product.model';
 import { ShoppingItem } from '../../models/shopping-item.model';
 import { ProductService } from '../../services/product.service';
 import { ShoppingItemService } from '../../services/shopping-item.service';
+import { ProductLookupService } from '../../services/product-lookup.service';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
+import { BarcodeScannerComponent } from '../../components/barcode-scanner/barcode-scanner.component';
 
 interface ProductForm {
   name: string;
@@ -39,10 +41,30 @@ type CategoryFilter = 'ALL' | Category;
  */
 @Component({
   selector: 'app-pantry',
-  imports: [FormsModule, ProductCardComponent],
+  imports: [FormsModule, ProductCardComponent, BarcodeScannerComponent],
   template: `
     <section>
       <h2 class="mb-4 text-xl font-bold">📦 Pantry</h2>
+
+      <!-- Barcode scanner (lazily loaded on first use) -->
+      @if (editingId() === null) {
+        <button
+          type="button"
+          class="mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-300 px-4 py-2.5 font-medium text-emerald-700 transition-colors hover:bg-emerald-50"
+          (click)="startScan()"
+        >
+          📷 Scan barcode
+        </button>
+      }
+      @defer (when scanning()) {
+        @if (scanning()) {
+          <app-barcode-scanner (scanned)="onScanned($event)" (closed)="scanning.set(false)" />
+        }
+      } @loading {
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 text-sm text-white">
+          Loading scanner…
+        </div>
+      }
 
       <!-- Add / edit form -->
       <form (ngSubmit)="submit()" class="mb-6 space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
@@ -119,6 +141,9 @@ type CategoryFilter = 'ALL' | Category;
 
       @if (error()) {
         <p class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{{ error() }}</p>
+      }
+      @if (looking()) {
+        <p class="mb-4 rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-600">🔎 Looking up product…</p>
       }
       @if (notice(); as n) {
         <div class="mb-4 flex items-center gap-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
@@ -207,8 +232,11 @@ type CategoryFilter = 'ALL' | Category;
 export class PantryComponent implements OnInit {
   private readonly service = inject(ProductService);
   private readonly shoppingService = inject(ShoppingItemService);
+  private readonly lookup = inject(ProductLookupService);
 
   protected readonly categories = CATEGORIES;
+  protected readonly scanning = signal(false);
+  protected readonly looking = signal(false);
   protected form: ProductForm = emptyForm();
   protected readonly editingId = signal<number | null>(null);
   protected readonly filter = signal<CategoryFilter>('ALL');
@@ -352,6 +380,30 @@ export class PantryComponent implements OnInit {
         this.showNotice(`Added "${product.name}" to your shopping list. 🛒`, removeId);
       },
       error: () => this.error.set('Could not add to the shopping list. Please try again.'),
+    });
+  }
+
+  protected startScan(): void {
+    this.error.set(null);
+    this.notice.set(null);
+    this.scanning.set(true);
+  }
+
+  /** A barcode was scanned: look up its name and prefill the add form. */
+  protected onScanned(barcode: string): void {
+    this.scanning.set(false);
+    this.error.set(null);
+    this.notice.set(null);
+    this.editingId.set(null);
+    this.looking.set(true);
+    this.lookup.lookupName(barcode).subscribe((name) => {
+      this.looking.set(false);
+      if (name) {
+        this.form = { ...emptyForm(), name };
+        this.showNotice(`Found "${name}" — review the details and add it. 📷`);
+      } else {
+        this.showNotice(`No product found for barcode ${barcode}. Enter the name manually.`);
+      }
     });
   }
 
